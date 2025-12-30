@@ -1,0 +1,362 @@
+# routes/keranjang_routes.py
+from flask import (
+    Blueprint,
+    request,
+    session,
+    jsonify,
+    redirect,
+    url_for,
+    current_app,
+    flash,
+    render_template,
+)
+from typing import List, Dict, Any, Optional
+
+from models.Keranjang import (
+    normalize_item,
+    _is_logged_in as _kg_is_logged_in,
+    _get_server_cart_raw,
+    _set_server_cart_raw,
+    _remove_server_cart_for_warung,
+    cart_to_list,
+    find_index,
+    check_stock,
+)
+from models.Pesanan import Pesanan as PesananModel
+
+keranjang_bp = Blueprint("keranjang", __name__, url_prefix="/keranjang")
+
+
+def _is_logged_in() -> bool:
+    """Wrapper yang gunakan helper model Keranjang untuk cek session user."""
+    return _kg_is_logged_in()
+
+
+@keranjang_bp.route("/", methods=["GET"])
+def keranjang_index():
+    """
+    Fallback: /keranjang/?warung=<id>
+    Jika ada query param warung -> kirimkan ke template dengan warung_id.
+    """
+    wid = request.args.get("warung")
+    try:
+        warung_id = int(wid) if wid is not None else None
+    except Exception:
+        warung_id = None
+
+    user = session.get("user")
+    return render_template("keranjang.html", warung_id=warung_id or 0, user=user)
+
+
+@keranjang_bp.route("/<int:warung_id>", methods=["GET"])
+def keranjang(warung_id: int):
+    """
+    Halaman keranjang per-warung:
+    /keranjang/<warung_id>
+    """
+    user = session.get("user")
+    return render_template("keranjang.html", warung_id=warung_id, user=user)
+
+
+@keranjang_bp.route("/tambah", methods=["POST"])
+def tambah_keranjang():
+    """
+    Tambah satu item ke server-side cart (session) untuk user terlogin.
+    Payload: JSON { id_makanan, qty, note (opt), id_warung (opt) } atau form.
+    """
+    if not _is_logged_in():
+        return jsonify({"success": False, "message": "Belum login"}), 401
+
+    payload = request.get_json(silent=True) or request.form or {}
+    try:
+        item = normalize_item(payload)
+    except Exception:
+        return jsonify({"success": False, "message": "Data item tidak valid"}), 400
+
+    if not item.id_makanan:
+        return jsonify({"success": False, "message": "id_makanan diperlukan"}), 400
+
+    warung_id = item.id_warung
+    if warung_id is None:
+        return jsonify({"success": False, "message": "id_warung diperlukan"}), 400
+
+    try:
+        server_cart = _get_server_cart_raw(warung_id) or []
+        idx, existing = find_index(server_cart, item.id_makanan)
+
+        # determine resulting qty (existing + incoming)
+        existing_qty = int(existing.get("qty", 0)) if existing else 0
+        desired_total_qty = existing_qty + int(item.qty)
+
+        # cek stok terhadap desired_total_qty
+        ok_stock, avail = check_stock(item.id_makanan, desired_total_qty)
+        if not ok_stock:
+            return jsonify({"success": False, "message": f"Stok tidak cukup (tersedia {avail})"}), 409
+
+        if existing:
+            server_cart[idx]["qty"] = desired_total_qty
+            if item.note:
+                server_cart[idx]["note"] = item.note
+        else:
+            # gunakan to_dict() agar konsisten (normalize_item mengembalikan dataclass)
+            try:
+                server_cart.append(item.to_dict())
+            except Exception:
+                # fallback aman
+                server_cart.append({
+                    "id_makanan": int(item.id_makanan),
+                    "id_warung": int(item.id_warung) if item.id_warung is not None else None,
+                    "nama": item.nama,
+                    "harga": float(item.harga),
+                    "qty": int(item.qty),
+                    "note": item.note,
+                    "img": item.img,
+                })
+
+        _set_server_cart_raw(warung_id, server_cart)
+        return jsonify({"success": True, "cart": server_cart}), 200
+    except Exception as e:
+        current_app.logger.exception("Gagal tambah item ke server cart: %s", e)
+        return jsonify({"success": False, "message": "Gagal tambahkan item"}), 500
+
+
+@keranjang_bp.route("/get", methods=["GET"])
+def get_server_cart():
+    """
+    GET /keranjang/get?warung=<id>
+    Jika warung diberikan -> kembalikan list item untuk warung tersebut.
+    Jika tidak -> kembalikan semua (dict keyed by warung_id).
+    """
+    if not _is_logged_in():
+        return jsonify({"success": False, "message": "Belum login"}), 401
+
+    try:
+        wid = request.args.get("warung")
+        all_cart = session.get("server_cart") or {}
+        # pastikan all_cart bertipe dict
+        if not isinstance(all_cart, dict):
+            all_cart = {}
+        if wid:
+            cur = all_cart.get(str(wid), [])
+            return jsonify({"success": True, "cart": cur}), 200
+        return jsonify({"success": True, "cart": all_cart}), 200
+    except Exception as e:
+        current_app.logger.exception("Gagal ambil server cart: %s", e)
+        return jsonify({"success": False, "message": "Gagal ambil keranjang"}), 500
+
+
+@keranjang_bp.route("/merge", methods=["POST"])
+def merge_cart():
+    """
+    Merge local cart (payload JSON { cart: [...] }) ke server cart (session).
+    Returns:
+      - 200: success all
+      - 207: partial (beberapa item gagal karena stok / data)
+      - 401: belum login
+    """
+    if not _is_logged_in():
+        return jsonify({"success": False, "message": "Belum login"}), 401
+
+    data = request.get_json(silent=True) or {}
+    local_cart = data.get("cart") or []
+    if not isinstance(local_cart, list):
+        return jsonify({"success": False, "message": "Format cart salah"}), 400
+
+    grouped: Dict[str, List[Dict[str, Any]]] = {}
+    for raw in local_cart:
+        try:
+            it = normalize_item(raw)
+        except Exception:
+            continue
+        wid_key = str(it.id_warung) if it.id_warung is not None else "none"
+        try:
+            grouped.setdefault(wid_key, []).append(it.to_dict())
+        except Exception:
+            # fallback kalau to_dict gagal
+            grouped.setdefault(wid_key, []).append({
+                "id_makanan": int(it.id_makanan),
+                "id_warung": int(it.id_warung) if it.id_warung is not None else None,
+                "nama": it.nama,
+                "harga": float(it.harga),
+                "qty": int(it.qty),
+                "note": it.note,
+                "img": it.img,
+            })
+
+    server_all = session.get("server_cart") or {}
+    if not isinstance(server_all, dict):
+        server_all = {}
+    partial_failed: List[Dict[str, Any]] = []
+
+    for wid, items in grouped.items():
+        if wid == "none":
+            partial_failed.append({"warung": None, "reason": "id_warung tidak ada", "items": items})
+            continue
+
+        existing = server_all.get(wid, [])
+        if not isinstance(existing, list):
+            existing = []
+
+        for incoming in items:
+            try:
+                mid = int(incoming.get("id_makanan") or incoming.get("id") or 0)
+                qty = max(1, int(incoming.get("qty", 1)))
+            except Exception:
+                continue
+
+            ok, avail = check_stock(mid, qty)
+            if not ok:
+                partial_failed.append({"warung": wid, "id_makanan": mid, "reason": f"Stok kurang ({avail})"})
+                continue
+
+            found_idx, found = find_index(existing, mid)
+            if found:
+                try:
+                    existing[found_idx]["qty"] = int(existing[found_idx].get("qty", 1)) + qty
+                except Exception:
+                    existing[found_idx]["qty"] = qty
+                if incoming.get("note"):
+                    existing[found_idx]["note"] = incoming.get("note")
+            else:
+                incoming["qty"] = qty
+                existing.append(incoming)
+
+        server_all[wid] = existing
+
+    session["server_cart"] = server_all
+    session.modified = True
+
+    status_code = 200 if not partial_failed else 207
+    return (
+        jsonify(
+            {
+                "success": True if not partial_failed else False,
+                "cart": server_all,
+                "partial_failed": partial_failed,
+            }
+        ),
+        status_code,
+    )
+
+
+@keranjang_bp.route("/pembayaran", methods=["POST"])
+def pembayaran():
+    """
+    Buat pesanan dari form atau server cart (per-warung).
+    - Menerima form fields: qty_0..qty_n, id_0..id_n, note_0.., count
+    - Jika tidak ada form items -> fallback ke server cart untuk warung.
+    Setelah pesanan sukses dibuat: hapus server cart untuk warung, redirect ke halaman pembayaran.
+    Response: redirect (form) atau JSON { success, redirect } (AJAX).
+    """
+    is_ajax = request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    if not _is_logged_in():
+        if is_ajax:
+            return jsonify({"success": False, "message": "Belum login"}), 401
+        return redirect(url_for("auth.auth_page"))
+
+    # baca warung
+    warung_field = request.form.get("warung") or request.args.get("warung")
+    try:
+        warung_id = int(warung_field) if warung_field is not None else None
+    except Exception:
+        warung_id = None
+
+    if warung_id is None:
+        if is_ajax:
+            return jsonify({"success": False, "message": "Field 'warung' diperlukan"}), 400
+        flash("Field 'warung' diperlukan.", "error")
+        return redirect(request.referrer or url_for("home.home"))
+
+    # parse items dari form
+    items: List[Dict[str, Any]] = []
+    try:
+        count = int(request.form.get("count", 0))
+    except Exception:
+        count = 0
+
+    for i in range(count):
+        id_val = request.form.get(f"id_{i}")
+        qty_val = request.form.get(f"qty_{i}")
+        note_val = request.form.get(f"note_{i}", "") or ""
+        try:
+            mid = int(id_val)
+            mq = max(1, int(qty_val or 1))
+        except Exception:
+            continue
+        items.append({"id_makanan": mid, "qty": mq, "note": note_val})
+
+    # fallback ke server cart jika tidak ada items di form
+    if not items:
+        server_cart = _get_server_cart_raw(warung_id) or []
+        for it in server_cart:
+            try:
+                mid = int(it.get("id_makanan") or it.get("id") or 0)
+                mq = max(1, int(it.get("qty", 1)))
+            except Exception:
+                continue
+            items.append({"id_makanan": mid, "qty": mq, "note": it.get("note", "") or ""})
+
+    if not items:
+        if is_ajax:
+            return jsonify({"success": False, "message": "Tidak ada item untuk dipesan"}), 400
+        flash("Tidak ada item untuk dipesan.", "error")
+        return redirect(request.referrer or url_for("home.home"))
+
+    # ambil id pembeli dari session
+    user = session.get("user") or {}
+    id_pembeli = user.get("IdPengguna") or user.get("id") or user.get("IdUser")
+    if not id_pembeli:
+        if is_ajax:
+            return jsonify({"success": False, "message": "User tidak dikenali"}), 401
+        flash("User tidak dikenali.", "error")
+        return redirect(url_for("auth.auth_page"))
+
+    # buat pesanan (transactional) via model Pesanan
+    try:
+        p = PesananModel()
+        id_new = p.create_with_items(items=items, id_pembeli=int(id_pembeli), id_warung=int(warung_id), catatan="")
+    except ValueError as ve:
+        current_app.logger.warning("Validasi pembuatan pesanan gagal: %s", ve)
+        msg = str(ve)
+        if is_ajax:
+            return jsonify({"success": False, "message": msg}), 409
+        # gunakan safe url_for: jika gagal bangun url, fallback ke home
+        try:
+            redirect_target = url_for("keranjang.get_server_cart", warung=warung_id)
+        except Exception:
+            redirect_target = url_for("home.home")
+        flash("Gagal membuat pesanan: " + msg, "error")
+        return redirect(request.referrer or redirect_target)
+    except Exception as e:
+        current_app.logger.exception("Gagal membuat pesanan: %s", e)
+        if is_ajax:
+            return jsonify({"success": False, "message": "Terjadi kesalahan server saat membuat pesanan"}), 500
+        try:
+            redirect_target = url_for("keranjang.get_server_cart", warung=warung_id)
+        except Exception:
+            redirect_target = url_for("home.home")
+        flash("Terjadi kesalahan saat membuat pesanan: " + str(e), "error")
+        return redirect(request.referrer or redirect_target)
+
+    # sukses: hapus server cart untuk warung ini (jangan crash bila gagal)
+    try:
+        _remove_server_cart_for_warung(warung_id)
+    except Exception:
+        current_app.logger.exception(
+            "Gagal hapus server cart untuk warung %s setelah pembuatan pesanan %s", warung_id, id_new
+        )
+
+    # tentukan redirect URL ke halaman pembayaran (prioritas: blueprint pembayaran jika ada)
+    try:
+        redirect_url = url_for("pembayaran.pembayaran_page", id_pesanan=id_new)
+    except Exception:
+        try:
+            redirect_url = url_for("pesanan.pembayaran", id_pesanan=id_new)
+        except Exception:
+            redirect_url = url_for("home.home")
+
+    if is_ajax:
+        return jsonify({"success": True, "redirect": redirect_url, "id_pesanan": id_new}), 200
+
+    return redirect(redirect_url)
