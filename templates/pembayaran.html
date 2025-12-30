@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pilih Metode Pembayaran</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box
+    }
+
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f3f3f3
+    }
+
+    .app {
+        min-height: 100vh;
+        background: #ff9f1a;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    .header {
+        background: #ff9f1a;
+        padding: 36px 16px 24px;
+        position: relative
+    }
+
+    .header h1 {
+        margin: 0;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: #7a231f
+    }
+
+    .back-btn {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: 0;
+        background: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .content {
+        padding: 16px;
+        padding-bottom: 120px;
+        background: #fffef4;
+        border-radius: 24px 24px 0 0;
+        margin-top: -12px;
+        overflow: hidden;
+        flex: 1
+    }
+
+    /* Payment Methods */
+    .methods {
+        background: #fffdf7;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #eee0cf;
+    }
+
+    .method-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .method-row:active {
+        background-color: #fef0db;
+    }
+
+    .method-row+.method-row {
+        border-top: 1px solid #eee0cf
+    }
+
+    .method-left {
+        display: flex;
+        align-items: center;
+        gap: 12px
+    }
+
+    .logo-box {
+        width: 44px;
+        height: 34px;
+        border-radius: 8px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        border: 1px solid #eee;
+    }
+
+    .method-name {
+        font-size: 15px;
+        color: #333;
+    }
+
+    .method-right {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center
+    }
+
+    .method-right input[type="radio"] {
+        opacity: 0;
+        position: absolute;
+        inset: 0;
+        margin: 0;
+        cursor: pointer
+    }
+
+    .custom-radio {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #c4b6aa;
+        box-sizing: border-box;
+        display: inline-block;
+        transition: all 0.2s;
+    }
+
+    .method-right input[type="radio"]:checked+.custom-radio {
+        border-color: #b6342c;
+        border-width: 6px;
+    }
+
+    .method-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+        background-color: #fafafa;
+    }
+
+    .note {
+        font-size: 13px;
+        color: #666;
+        padding: 12px;
+        text-align: center;
+    }
+
+    /* Total Bar */
+    .total-bar {
+        margin-top: 18px;
+        padding: 16px;
+        border-top: 1px solid #e2d6c7;
+        border-bottom: 1px solid #e2d6c7;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 16px;
+        background: #fffdf7;
+        border-radius: 8px;
+        color: #7a231f;
+    }
+
+    /* Footer Button */
+    .footer {
+        margin-top: 24px;
+        display: flex;
+        justify-content: center
+    }
+
+    .confirm-btn {
+        width: 100%;
+        max-width: 320px;
+        padding: 14px;
+        border-radius: 999px;
+        border: 0;
+        background: #b4382d;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(180, 56, 45, 0.3);
+        transition: transform 0.1s;
+    }
+
+    .confirm-btn:active {
+        transform: scale(0.98);
+    }
+
+    .confirm-btn[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #888;
+    }
+
+    .helper {
+        font-size: 13px;
+        color: #444;
+        margin-top: 16px;
+        text-align: center;
+        min-height: 20px;
+    }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <button class="back-btn" onclick="history.back()" aria-label="Back">←</button>
+      <h1>Pilih Metode Pembayaran</h1>
+    </header>
+
+    <main class="content">
+
+      <form id="paymentForm" method="post" action="{{ url_for('pembayaran.pembayaran_process', id_pesanan=id_pesanan) }}">
+        
+        {% if csrf_token is defined %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% endif %}
+
+        <section class="methods" id="methods">
+          {% for m in payment_methods %}
+            {% set is_cash = (m|lower == 'cash') %}
+            {% set checked = is_cash %}
+            
+            <label class="method-row{% if not is_cash %} method-disabled{% endif %}">
+              <div class="method-left">
+                <div class="logo-box">{{ m[:2] }}</div>
+                <span class="method-name">{{ m }}</span>
+              </div>
+              <div class="method-right">
+                <input type="radio" name="metode" value="{{ m }}" {% if checked %}checked{% endif %} {% if not is_cash %}disabled{% endif %}>
+                <span class="custom-radio"></span>
+              </div>
+            </label>
+          {% endfor %}
+        </section>
+
+        <p class="note">Metode selain <strong>Cash</strong> belum tersedia. Pilih Cash untuk melanjutkan.</p>
+
+        <section class="total-bar" aria-live="polite">
+          <span>TOTAL TAGIHAN</span>
+          <span id="paymentTotal">Rp {{ "{:,.0f}".format(total or 0) }}</span>
+        </section>
+
+        <div class="footer">
+          <button id="confirmBtn" type="button" class="confirm-btn">Konfirmasi & Bayar</button>
+        </div>
+
+        <p class="helper" id="helperMsg"></p>
+      </form>
+    </main>
+  </div>
+
+  <script>
+  (function(){
+    const btn = document.getElementById("confirmBtn");
+    const form = document.getElementById("paymentForm");
+    const helper = document.getElementById("helperMsg");
+
+    function setHelper(msg, err=false){
+      helper.textContent = msg;
+      helper.style.color = err ? "#b4382d" : "#444";
+    }
+
+    async function submitPayment(){
+      setHelper("");
+      btn.disabled = true;
+      btn.textContent = "Memproses...";
+
+      const sel = document.querySelector('input[name="metode"]:checked');
+      const method = sel ? sel.value : 'Cash';
+      
+      const body = new URLSearchParams();
+      body.append("metode", method);
+      
+      const csrfEl = document.querySelector('input[name="csrf_token"]');
+      if(csrfEl){
+          body.append("csrf_token", csrfEl.value);
+      }
+
+      try {
+        const resp = await fetch(form.action, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { 
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest' 
+          },
+          body: body
+        });
+
+        if(resp.redirected){
+           cleanLocalStorage(); 
+           window.location.href = resp.url;
+           return;
+        }
+
+        let data = null;
+        try { 
+            data = await resp.json(); 
+        } catch(e){
+            console.error(e);
+            throw new Error("Respon server tidak valid.");
+        }
+
+        if(data?.success && data.redirect){
+          cleanLocalStorage(); // Hapus keranjang
+          window.location.href = data.redirect;
+          return;
+        }
+
+        if(resp.status === 401){
+          setHelper('Sesi habis. Silakan login kembali.', true);
+          setTimeout(()=> window.location.href = "{{ url_for('auth.auth_page') }}", 1000);
+          return;
+        }
+
+        if(!data?.success){
+             setHelper(data?.message || "Pembayaran gagal diproses.", true);
+             btn.disabled = false;
+             btn.textContent = "Coba Lagi";
+             return;
+        }
+
+      } catch(e){
+        console.error('Payment submit error:', e);
+        setHelper('Terjadi kesalahan jaringan atau server. Coba refresh halaman.', true);
+        btn.disabled = false;
+        btn.textContent = "Konfirmasi & Bayar";
+      }
+    }
+
+    function cleanLocalStorage(){
+        try {
+            Object.keys(localStorage).forEach(key => {
+                if(key.startsWith('cart:warung:')){
+                    localStorage.removeItem(key);
+                }
+            });
+            console.log("Local storage cart cleaned.");
+        } catch(e) { console.error("Gagal cleanup storage", e); }
+    }
+
+    if(btn){
+        btn.addEventListener('click', submitPayment);
+    }
+  })();
+  </script>
+
+</body>
+</html>

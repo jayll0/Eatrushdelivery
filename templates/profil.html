@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informasi Pribadi</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: #f6f7fb;
+      --primary: #f26b3a;
+      --text-main: #222222;
+      --text-muted: #757575;
+      --shadow-soft: 0 14px 35px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .screen {
+      width: 320px;
+      min-height: 100vh;
+      padding: 24px 20px 32px;
+      text-align: center;
+      background: var(--bg);
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+    .page-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .edit-btn {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      text-decoration: none; /* Tambahan agar link terlihat rapi */
+    }
+
+    .profile-name {
+      text-align: center;
+      font-size: 20px;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .avatar {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 2px solid #FF7A1A;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-wrapper {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      margin: 0 auto 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-icon {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+    
+    .info-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 18px 18px 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+    }
+
+    .info-row + .info-row {
+      border-top: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .info-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffece1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .email-icon {
+      background: #ece8ff;
+    }
+
+    .phone-icon {
+      background: #e1f3ff;
+    }
+
+    .info-text {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .info-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #8b8b8b;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .info-value {
+      font-size: 12px;
+      color: var(--text-main);
+    }
+    .back-btn {
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: #333;
+            backdrop-filter: blur(4px)
+    }
+</style>
+
+
+  </style>
+</head>
+
+<body>
+  <div class="screen">
+    <header class="top-bar">
+       <a href="{{ url_for('pengguna.menu') }}" class="back-btn">←</a>
+      <span class="page-title">Informasi Pribadi</span>
+      <a href="{{ url_for('pengguna.editProfil') }}" class="edit-btn">EDIT</a>
+    </header>
+
+    <main>
+      <h1 class="profile-name">{{pengguna.NamaPengguna or user}}</h1>
+
+      <div class="avatar-wrapper">
+        <label class="avatar">
+          {% if pengguna.IdPengguna %}
+             <img id="preview" 
+                  src="{{ url_for('pengguna.get_foto_profil', id=pengguna.IdPengguna) }}?v={{ range(1, 10000) | random }}" 
+                  onerror="this.src='https://via.placeholder.com/150?text=No+Image'" 
+                  alt="Avatar Pengguna"
+                  class="avatar-img">
+          {% else %}
+             <img id="preview" 
+                  src="https://via.placeholder.com/150?text=Guest" 
+                  alt="Guest Avatar"
+                  class="avatar-img">
+          {% endif %}
+        </label>
+      </div>
+
+
+      <section class="info-card">
+        <div class="info-row">
+          <div class="info-icon user-icon">👤</div>
+          <div class="info-text">
+            <div class="info-label">USERNAME</div>
+            <div class="info-value">{{pengguna.NamaPengguna or user}}</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon email-icon">📧</div>
+          <div class="info-text">
+            <div class="info-label">EMAIL</div>
+            <div class="info-value">{{pengguna.Email}}</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon phone-icon">📞</div>
+          <div class="info-text">
+            <div class="info-label">NOMOR TELEPON</div>
+                <div class="info-value">{{pengguna.NomorTelepon or '-'}}</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  </body>
+</html>

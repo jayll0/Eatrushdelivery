@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pesanan Dibatalkan</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --primary:#973131;
+      --accent:#FF9800;
+      --bg:#FFFAF2;
+      --card:#fff;
+      --muted:#6b6b6b;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --radius:14px;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:#222;
+    }
+
+    .app{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding-bottom:120px;
+    }
+
+    .app-header{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      padding:18px 16px;
+    }
+    .back-btn{
+      position:absolute;
+      left:14px;
+      top:10px;
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      border:none;
+      background:#fff;
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      color:var(--primary);
+      cursor:pointer;
+    }
+    .header-title{
+      font-weight:900;
+      font-size:20px;
+      color:var(--primary);
+    }
+
+    .app-body{
+      padding:20px;
+      flex:1;
+    }
+
+    .field-label{
+      font-size:15px;
+      color:var(--primary);
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .textarea-wrapper{
+      position:relative;
+      border-radius:12px;
+      border:1px solid rgba(151,49,49,0.08);
+      background:linear-gradient(180deg,#fffaf4,#fffefc);
+      padding:14px;
+      box-shadow: 0 6px 18px rgba(143,38,38,0.04);
+    }
+    textarea{
+      width:100%;
+      border:none;
+      resize:none;
+      outline:none;
+      background:transparent;
+      font-size:15px;
+      color:#333;
+      line-height:1.5;
+      min-height:160px;
+    }
+
+    .char-counter{
+      position:absolute;
+      right:12px;
+      bottom:10px;
+      font-size:13px;
+      color:var(--muted);
+      background:rgba(255,255,255,0.6);
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,0.04);
+    }
+    .char-counter.error{
+      color:#b72a24;
+      border-color: rgba(183,42,36,0.25);
+    }
+
+    .helper-error{
+      margin-top:10px;
+      color: #b72a24;
+      font-size:13px;
+      display:none; /* Default hidden */
+    }
+
+    .bottom-actions{
+      position:fixed;
+      left:16px;
+      right:16px;
+      bottom:18px;
+    }
+    .primary-btn{
+      width:100%;
+      border-radius:12px;
+      padding:14px 16px;
+      border:none;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      background:var(--primary);
+      color:#fff;
+      box-shadow:var(--shadow);
+    }
+    
+    /* Tambahan style untuk Flash Message */
+    .alert { padding: 12px; margin-bottom: 15px; border-radius: 8px; font-size: 14px; line-height: 1.4; }
+    .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    
+    <header class="app-header">
+      <a href="javascript:history.back()" class="back-btn">←</a>
+      <div class="header-title">Pesanan Dibatalkan</div>
+    </header>
+
+    <main class="app-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form action="{{ url_for('pesanan.batal_pesanan_page', id_pesanan=pesanan.IdPesananWarung) }}" method="POST" id="cancelForm">
+        
+        <label class="field-label" for="reason">Alasan Pembatalan</label>
+
+        <div class="textarea-wrapper">
+          <textarea id="reason" name="alasan" maxlength="255" placeholder="Contoh: Ingin mengganti menu, salah alamat, berubah pikiran..."></textarea>
+          <div id="charCounter" class="char-counter">0/255</div>
+        </div>
+
+        <div id="helperError" class="helper-error">
+          Input tidak bisa melebihi batas 255 karakter
+        </div>
+        
+        <div class="bottom-actions">
+           <button type="submit" id="confirmBtn" class="primary-btn">Konfirmasi Pembatalan</button>
+        </div>
+
+      </form>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+        const textarea   = document.getElementById('reason');
+        const counter    = document.getElementById('charCounter');
+        const helper     = document.getElementById('helperError');
+        const backBtn    = document.getElementById('backBtn');
+        const form       = document.getElementById('cancelForm');
+        const max        = 255;
+
+        function updateCounter(){
+            const len = textarea.value.length;
+            counter.textContent = len + '/' + max;
+            if (len >= max) {
+                counter.classList.add('error');
+                helper.style.display = 'block';
+            } else {
+                counter.classList.remove('error');
+                helper.style.display = 'none';
+            }
+        }
+        textarea.addEventListener('input', updateCounter);
+        window.addEventListener('DOMContentLoaded', updateCounter);
+
+        form.addEventListener('submit', function(e) {
+            const reason = textarea.value.trim();
+
+            if (reason.length === 0) {
+                e.preventDefault(); 
+                alert("Alasan tidak boleh kosong!");
+                return;
+            }
+
+            if (reason.length > max) {
+                e.preventDefault(); 
+                alert("Alasan terlalu panjang!");
+                return;
+            }
+
+            if(!confirm("Yakin ingin membatalkan pesanan ini secara permanen?")) {
+                e.preventDefault();
+            }
+        });
+    })();
+  </script>
+
+</body>
+</html>

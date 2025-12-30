@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Edit Lokasi</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    :root {
+        --bg: #fffdf5;
+        --muted: #9aa0a6;
+        --accent: #ff9f1a;
+        --radius-md: 10px;
+        --map-height: 300px;
+    }
+
+    body {
+        margin: 0;
+        font-family: sans-serif;
+        background: var(--bg);
+        display: flex;
+        justify-content: center;
+        padding: 22px;
+        color: #222;
+    }
+
+    .frame {
+        width: 100%;
+        max-width: 380px;
+        background: var(--bg);
+        border-radius: 18px;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .map-area {
+        height: var(--map-height);
+        background: #eee;
+        position: relative;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+    .center-marker {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 40px;
+        height: 40px;
+        transform: translate(-50%, -100%);
+        z-index: 1100;
+        pointer-events: none;
+        background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png');
+        background-repeat: no-repeat;
+        background-position: center bottom;
+    }
+
+    .content {
+        padding: 18px;
+        background: var(--bg);
+        flex: 1;
+    }
+
+    .label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 700;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+
+    .input {
+        width: 100%;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid #ddd;
+        background: #fff;
+        font-size: 14px;
+        margin-bottom: 14px;
+    }
+
+    .input:read-only {
+        background: #f0f0f0;
+        color: #666;
+    }
+
+    .hint {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 15px;
+    }
+
+    .btn-save {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .btn-save:active {
+        transform: scale(0.98);
+    }
+
+    .btn-save:disabled {
+        background: #ccc;
+    }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="map-area">
+    <div id="map"></div>
+        <a href="{{ url_for('home.home') }}" class="back-btn">←</a>
+    <div class="center-marker"></div>
+  </div>
+
+  <div class="content">
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+    <label class="label">Titik Koordinat</label>
+    <input id="titik" class="input" readonly placeholder="Sedang memuat...">
+
+    <label class="label">Alamat Lengkap</label>
+    <input id="alamat" class="input" placeholder="Jalan, No Rumah, RT/RW..." value="{{ current_alamat or '' }}">
+
+    <label class="label">Patokan</label>
+    <input id="patokan" class="input" placeholder="Warna pagar, dekat warung..." value="{{ current_patokan or '' }}">
+
+    <div class="hint">Geser peta agar pin berada di lokasi Anda.</div>
+
+    <button id="saveBtn" class="btn-save">SIMPAN LOKASI</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // Setup Leaflet
+  const savedCoord = "{{ current_kordinat or '' }}";
+  let lat = -6.1754, lng = 106.8272; // Default
+
+  if(savedCoord && savedCoord.includes(',')) {
+      const p = savedCoord.split(',');
+      if(!isNaN(p[0])) { lat = parseFloat(p[0]); lng = parseFloat(p[1]); }
+  }
+
+  const map = L.map('map', { center: [lat, lng], zoom: 15, zoomControl: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+  const elTitik = document.getElementById('titik');
+  
+  function updateInput() {
+      const c = map.getCenter();
+      elTitik.value = `${c.lat.toFixed(6)},${c.lng.toFixed(6)}`;
+  }
+  map.on('move', updateInput);
+  updateInput();
+
+  // Logic Simpan
+  document.getElementById('saveBtn').addEventListener('click', async function() {
+      const btn = this;
+      btn.textContent = "Menyimpan...";
+      btn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('kordinat', elTitik.value);
+      formData.append('alamat', document.getElementById('alamat').value); // INI YANG SEBELUMNYA KURANG
+      formData.append('patokan', document.getElementById('patokan').value);
+      
+      // Ambil CSRF jika ada
+      const csrfEl = document.getElementById('csrf_token');
+      const headers = {};
+      if(csrfEl && csrfEl.value) headers['X-CSRFToken'] = csrfEl.value;
+
+      try {
+          // Pastikan route ini sesuai dengan pengguna_routes.py
+          const resp = await fetch("{{ url_for('pengguna.simpan_alamat') }}", {
+              method: 'POST',
+              body: formData,
+              headers: headers
+          });
+          
+          // Cek jika response bukan JSON (misal error HTML 500)
+          const text = await resp.text();
+          let data;
+          try {
+              data = JSON.parse(text);
+          } catch (e) {
+              console.error("Server Error:", text);
+              throw new Error("Terjadi kesalahan di server (500). Cek log Python.");
+          }
+
+          if(resp.ok && data.status === 'success') {
+              window.location.href = "{{ url_for('pengguna.profil') }}";
+          } else {
+              alert("Gagal: " + (data.message || "Unknown error"));
+              btn.textContent = "SIMPAN LOKASI";
+              btn.disabled = false;
+          }
+      } catch(e) {
+          alert(e.message);
+          btn.textContent = "SIMPAN LOKASI";
+          btn.disabled = false;
+      }
+  });
+</script>
+</body>
+</html>

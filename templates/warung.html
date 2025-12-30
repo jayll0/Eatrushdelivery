@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ warung.NamaWarung if warung else "Warung" }} — Menu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #fff;
+      padding-bottom: 120px;
+    }
+
+    .banner img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover
+    }
+
+    .header-card {
+      background: #FFFAF2;
+      margin-top: -10px;
+      padding: 18px;
+      border-radius: 48px 48px 0 0
+    }
+
+    .header-card .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #973131
+    }
+
+    .header-card .sub {
+      margin-top: 6px;
+      color: #666
+    }
+
+    .menu-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      padding: 14px;
+      margin-top: 10px
+    }
+
+    .menu-card {
+      background: #FFF7F0;
+      padding: 10px;
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      position: relative;
+      cursor: pointer
+    }
+
+    .menu-card img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 10px
+    }
+
+    .add-btn {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #973131;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 45px;
+      height: 45px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.18);
+      z-index: 200;
+      cursor: pointer
+    }
+
+    #summary-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 520px;
+      background: #FF9800;
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 48px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      display: none;
+      z-index: 999;
+      cursor: pointer
+    }
+
+    .summary-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .summary-text {
+      display: flex;
+      flex-direction: column
+    }
+
+    .summary-text .small {
+      font-size: 12px;
+      opacity: 0.95
+    }
+
+    /* toast & modal */
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 20px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      font-size: 14px;
+      color: #fff
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000
+    }
+
+    .modal {
+      width: 320px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      font-family: Arial
+    }
+
+    .modal h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #8A0000
+    }
+
+    .modal p {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 14px
+    }
+
+    .modal .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700
+    }
+
+    .btn-primary {
+      background: #FF9800;
+      color: #fff
+    }
+
+    .btn-ghost {
+      background: #f2f2f2;
+      color: #333
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="back-btn" onclick="history.back()">←</div>
+
+  <div class="banner">
+    {% if warung and warung.GambarToko %}
+    <img src="{{ warung.GambarToko }}" alt="{{ warung.NamaWarung }}">
+    {% else %}
+    <img src="{{ url_for('static', filename='img/placeholder-shop.png') }}" alt="Banner">
+    {% endif %}
+  </div>
+
+  <div class="header-card">
+    <div class="title">{{ warung.NamaWarung if warung else "Warung" }}</div>
+    <div class="sub">{{ warung.AlamatWarung if warung else "" }}</div>
+  </div>
+
+  <div class="menu-list" id="menu-list">
+    {% for m in makanan_list %}
+    <div class="menu-card" tabindex="0" data-id="{{ m.IdMakanan }}" data-name="{{ m.NamaMakanan }}"
+      data-price="{{ m.HargaMakanan }}" data-warung="{{ m.IdWarung }}"
+      data-img="{% if m.GambarMakanan %}{{ url_for('warung.makanan_image', id_m=m.IdMakanan) }}{% else %}{{ url_for('static', filename='img/noimage.png') }}{% endif %}"
+      data-url="{{ url_for('warung.makanan_detail', id_m=m.IdMakanan) }}">
+      <img
+        src="{% if m.GambarMakanan %}{{ url_for('warung.makanan_image', id_m=m.IdMakanan) }}{% else %}{{ url_for('static', filename='img/noimage.png') }}{% endif %}"
+        alt="{{ m.NamaMakanan }}">
+      <div style="margin-top:8px;font-weight:700;color:#973131">{{ m.NamaMakanan }}</div>
+      <div style="font-size:13px;color:#444">Rp {{ "{:,.0f}".format(m.HargaMakanan) }}</div>
+      {% if m.DetailMakanan %}
+      <div style="margin-top:6px;font-size:12px;color:#666">{{ m.DetailMakanan }}</div>
+      {% endif %}
+      <div class="add-btn">+</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="summary-bar"
+    data-url="{% if warung and warung.IdWarung is not none %}{{ url_for('keranjang.keranjang_view', warung_id=warung.IdWarung) }}{% else %}#{% endif %}">
+    <div class="summary-content">
+      <div style="display:flex;gap:12px;align-items:center">
+        <img src="{{ url_for('static', filename='img/iconTotalBelanja.png') }}" style="width:30px;height:30px">
+        <div class="summary-text">
+          <div id="item-count">0 item</div>
+          <div class="small">Klik untuk lihat</div>
+        </div>
+      </div>
+      <div style="font-weight:700" id="total-price">Rp 0</div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const WARUNG_ID = {{ warung.IdWarung if warung and warung.IdWarung is not none else 'null' }};
+    const USER_LOGGED_IN = {{ 'true' if user else 'false' }};
+
+    if (window.CartApp && typeof window.CartApp.init === 'function') {
+      window.CartApp.init({
+        warungId: WARUNG_ID,
+        userLoggedIn: USER_LOGGED_IN,
+        endpoints: {
+          addUrl: "{{ url_for('keranjang.tambah_keranjang') }}",
+          getUrl: "{{ url_for('keranjang.get_server_cart') }}",
+          mergeUrl: "{{ url_for('keranjang.merge_cart') }}",
+          pembayaranUrl: "{{ url_for('keranjang.checkout') if (url_for is defined) else '#' }}",
+          authUrl: "{{ url_for('auth.auth_page') }}"
+        }
+      });
+    }
+
+    function totals(arr) {
+      let items = 0, total = 0;
+      (arr || []).forEach(i => { items += Number(i.qty || 0); total += Number(i.harga || 0) * Number(i.qty || 0); });
+      return { items, total };
+    }
+
+    function showToast(text, timeout = 2200, isError = false) {
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = text;
+      el.style.background = isError ? '#D32F2F' : '#4CAF50';
+      document.body.appendChild(el);
+      setTimeout(() => {
+        el.style.transition = 'opacity 220ms';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 250);
+      }, timeout);
+    }
+
+    function showSwitchModal(oldWarungId, newWarungId) {
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop';
+      backdrop.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3>Keranjang Diperbarui</h3>
+        <p>Anda berpindah warung. Keranjang lama dari warung <strong>${oldWarungId}</strong> telah dihapus otomatis.</p>
+        <div class="actions">
+          <button class="btn btn-ghost" id="modal-close">Oke</button>
+          <button class="btn btn-primary" id="modal-view">Lihat Keranjang</button>
+        </div>
+      </div>
+    `;
+      document.body.appendChild(backdrop);
+      document.getElementById('modal-close').addEventListener('click', () => backdrop.remove());
+      document.getElementById('modal-view').addEventListener('click', () => {
+        backdrop.remove();
+        const urlTemplate = document.getElementById('summary-bar').dataset.url || '#';
+        if (urlTemplate && urlTemplate !== '#') {
+          let target = urlTemplate;
+          try { target = urlTemplate.replace(/\/\d+$/, '/' + newWarungId); } catch (e) { }
+          window.location.href = target;
+        }
+      });
+    }
+
+    function showSummaryFromLocal() {
+      let local = [];
+      try {
+        local = JSON.parse(localStorage.getItem('cart:warung:' + (WARUNG_ID !== null ? String(WARUNG_ID) : 'guest')) || '[]') || [];
+      } catch (e) { local = []; }
+      const t = totals(local);
+      const sb = document.getElementById('summary-bar');
+      const itemCount = document.getElementById('item-count');
+      const totalPrice = document.getElementById('total-price');
+      if (itemCount) itemCount.textContent = `${t.items} item`;
+      if (totalPrice) totalPrice.textContent = `Rp ${t.total.toLocaleString('id-ID')}`;
+      if (sb) sb.style.display = t.items > 0 ? 'block' : 'none';
+    }
+
+    async function performServerAdd(payload) {
+      if (window.CartApp && typeof window.CartApp.addOne === 'function') {
+        try { return await window.CartApp.addOne(payload); } catch (e) { }
+      }
+      try {
+        const addUrl = "{{ url_for('keranjang.tambah_keranjang') }}";
+        const r = await fetch(addUrl, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json().catch(() => ({ success: false, message: 'Response tidak valid' }));
+        return Object.assign({ ok: r.ok }, data);
+      } catch (e) {
+        return { ok: false, success: false, message: 'Network error' };
+      }
+    }
+
+    const menuList = document.getElementById('menu-list');
+    if (menuList) {
+      menuList.addEventListener('click', async function (e) {
+        const addBtn = e.target.closest('.add-btn');
+        if (addBtn) {
+          e.stopPropagation();
+
+          // --- [PERBAIKAN UTAMA DI SINI] ---
+          // Sebelum melakukan apapun, bersihkan keranjang warung lain SECARA PAKSA.
+          // Ini memastikan saat tombol ditekan, tidak ada sisa keranjang lama.
+          try {
+            const currentKey = 'cart:warung:' + (WARUNG_ID !== null ? String(WARUNG_ID) : 'guest');
+            Object.keys(localStorage).forEach(k => {
+              if (k.startsWith('cart:warung:') && k !== currentKey) {
+                console.log("Auto-cleanup (Switch Warung):", k);
+                localStorage.removeItem(k);
+              }
+            });
+          } catch (e) { }
+          // ---------------------------------
+
+          const card = addBtn.closest('.menu-card');
+          if (!card) return;
+          const id = Number(card.dataset.id);
+          const name = card.dataset.name;
+          const price = Number(card.dataset.price || 0);
+          const img = card.dataset.img || null;
+          const id_warung = card.dataset.warung ? Number(card.dataset.warung) : WARUNG_ID;
+
+          const payload = { id_makanan: id, qty: 1, note: "", id_warung: id_warung, nama: name, harga: price, img: img };
+
+          // 1. Tambah ke LocalStorage (Warung Saat Ini)
+          const key = 'cart:warung:' + (WARUNG_ID !== null ? String(WARUNG_ID) : 'guest');
+          let local = [];
+          try { local = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch (e) { local = []; }
+          const idx = local.findIndex(ci => Number(ci.id_makanan) === id);
+          if (idx >= 0) local[idx].qty = Number(local[idx].qty || 0) + 1;
+          else local.push(payload);
+          try { localStorage.setItem(key, JSON.stringify(local)); } catch (e) { }
+
+          showSummaryFromLocal();
+
+          // 2. Sync ke Server (Jika Login)
+          if (USER_LOGGED_IN) {
+            addBtn.disabled = true; // Disable tombol sebentar
+            try {
+              const result = await performServerAdd(payload);
+
+              // Cek jika server mendeteksi pindah warung
+              if (result) {
+                const switched = result.switched_from_warung !== undefined ? result.switched_from_warung
+                  : (result.switched_from !== undefined ? result.switched_from : null);
+
+                if (switched !== null && switched !== undefined) {
+                  // Konfirmasi ulang pembersihan (walaupun sudah dihapus di atas, ini untuk safety)
+                  try { localStorage.removeItem('cart:warung:' + switched); } catch (e) { }
+
+                  showSwitchModal(switched, id_warung);
+                } else if (result.success === false && result.message) {
+                  showToast(result.message, 3000, true);
+                } else if (result.success || result.ok) {
+                  showToast(result.message || 'Berhasil ditambahkan');
+                }
+
+                // Update snapshot lokal dari server
+                try {
+                  if (result.cart) {
+                    // Ambil cart spesifik warung ini dari respon server
+                    const cartData = Array.isArray(result.cart) ? result.cart : result.cart[String(WARUNG_ID)];
+                    if (cartData) localStorage.setItem(key, JSON.stringify(cartData));
+                  }
+                } catch (e) { }
+                showSummaryFromLocal();
+              }
+            } catch (err) {
+              console.error('Add error', err);
+              showToast('Gagal sinkron ke server', 2500, true);
+            } finally {
+              addBtn.disabled = false;
+            }
+          }
+          return;
+        }
+
+        // Handle klik card biasa (bukan tombol tambah)
+        const card = e.target.closest('.menu-card');
+        if (card) {
+          const url = card.dataset.url;
+          // Inisialisasi keranjang lokal kosong jika belum ada
+          try {
+            const key = 'cart:warung:' + (WARUNG_ID !== null ? String(WARUNG_ID) : 'guest');
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, JSON.stringify([]));
+            }
+          } catch (e) { }
+          if (url) window.location.href = url;
+        }
+      });
+    }
+
+    const summaryBar = document.getElementById('summary-bar');
+    if (summaryBar) {
+      summaryBar.addEventListener('click', function () {
+        const url = summaryBar.dataset.url || '#';
+        if (url && url !== '#') window.location.href = url;
+      });
+    }
+
+    showSummaryFromLocal();
+});
+  </script>
+
+</body>
+
+</html>

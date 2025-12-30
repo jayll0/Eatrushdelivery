@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>EatRush - Login & Register</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #FFF7E0;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 90%;
+        max-width: 1000px;
+        gap: 2rem
+    }
+    
+    .left {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center
+    }
+    
+    h2.title {
+        font-family: 'Luckiest Guy', cursive;
+        font-size: 3rem;
+        margin: 0
+    }
+    
+    h2.title .eat {
+        color: #973133
+    }
+    
+    h2.title .rush {
+        color: #FF9800
+    }
+    
+    .right {
+        flex: 1;
+        display: flex;
+        justify-content: center
+    }
+    
+    .toggle-bar {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #FF9800;
+        border-radius: 15px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        height: 50px
+    }
+    
+    .toggle-btn {
+        flex: 1;
+        text-align: center;
+        line-height: 50px;
+        font-weight: bold;
+        color: white;
+        cursor: pointer;
+        z-index: 2;
+        transition: color .3s
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+        height: 100%;
+        background-color: #973133;
+        border-radius: 15px;
+        transition: transform .4s cubic-bezier(.45, 0, .55, 1);
+        z-index: 1
+    }
+    
+    .toggle-bar.signup .toggle-slider {
+        transform: translateX(100%)
+    }
+    
+    .card {
+        width: 100%;
+        max-width: 400px;
+        background-color: #FDBE4C;
+        border-radius: 25px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, .15)
+    }
+    
+    input {
+        width: 90%;
+        padding: 1rem;
+        border-radius: 15px;
+        border: none;
+        margin-bottom: 1rem;
+        background-color: #8C2D19;
+        color: white
+    }
+    
+    input::placeholder {
+        color: rgba(255, 255, 255, .8)
+    }
+    
+    input:focus {
+        outline: 2px solid #a83a24;
+        background-color: #9e3a1e
+    }
+    
+    button {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 15px;
+        border: none;
+        cursor: pointer
+    }
+    
+    button.primary {
+        background-color: #8C2D19;
+        color: white;
+        font-size: 1.2rem
+    }
+    
+    button.google {
+        background-color: #db4437;
+        color: white;
+        font-weight: bold;
+        margin-top: 1rem
+    }
+    
+    a {
+        font-family: 'Luckiest Guy', cursive;
+        font-size: .9rem;
+        color: #8C2D19;
+        text-decoration: none;
+        display: block;
+        margin: 1rem
+    }
+    
+    .msg {
+        color: red;
+        font-size: .9rem;
+        margin-top: 1rem;
+        display: none
+    }
+    
+    .hidden {
+        display: none
+    }
+    
+    .fade-in {
+        animation: fadeIn .4s ease forwards
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px)
+        }
+    
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+    
+    @media (max-width:768px) {
+        body {
+            overflow-y: auto
+        }
+    
+        .container {
+            flex-direction: column;
+            text-align: center;
+            padding: 2rem 1rem
+        }
+    
+        .left {
+            order: 1;
+            margin-bottom: 1.5rem
+        }
+    
+        h2.title {
+            font-size: 2.5rem
+        }
+    
+        .right {
+            order: 2;
+            width: 100%
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h2 class="title"><span class="eat">Eat</span><span class="rush">Rush</span></h2>
+    </div>
+
+    <div class="right">
+      <div class="card" id="authCard">
+        <div class="toggle-bar" id="toggleBar">
+          <div class="toggle-slider"></div>
+          <div class="toggle-btn" id="toggleLogin">LOGIN</div>
+          <div class="toggle-btn" id="toggleSignup">SIGN UP</div>
+        </div>
+
+        <div id="loginForm" class="fade-in">
+          <input id="login_identifier" type="text" placeholder="Email atau Nama Pengguna" autocomplete="username" required />
+          <input id="login_password" type="password" placeholder="Password" autocomplete="current-password" required />
+          <a href="/forgot">Lupa Password?</a>
+          <button class="primary" id="btnLogin">Masuk</button>
+          <button class="google" id="btnGoogleLogin">Masuk dengan Google</button>
+          <div id="login_msg" class="msg"></div>
+        </div>
+
+        <div id="registerForm" class="hidden">
+          <input id="reg_username" type="text" placeholder="Nama Pengguna" required />
+          <input id="reg_email" type="email" placeholder="Email" required />
+          <input id="reg_password" type="password" placeholder="Password" required />
+          <input id="reg_confirm_password" type="password" placeholder="Konfirmasi Password" required />
+          <button class="primary" id="btnRegister">Daftar</button>
+          <button class="google" id="btnGoogleRegister">Daftar dengan Google</button>
+          <div id="register_msg" class="msg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const toggleBar = document.getElementById('toggleBar');
+const toggleLogin = document.getElementById('toggleLogin');
+const toggleSignup = document.getElementById('toggleSignup');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+
+toggleLogin.addEventListener('click', () => {
+  toggleBar.classList.remove('signup');
+  loginForm.classList.remove('hidden');
+  registerForm.classList.add('hidden');
+  loginForm.classList.add('fade-in');
+});
+
+toggleSignup.addEventListener('click', () => {
+  toggleBar.classList.add('signup');
+  registerForm.classList.remove('hidden');
+  loginForm.classList.add('hidden');
+  registerForm.classList.add('fade-in');
+});
+
+/* LOGIN */
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const identifier = document.getElementById('login_identifier').value.trim();
+  const password = document.getElementById('login_password').value;
+  const msg = document.getElementById('login_msg');
+  msg.style.display = 'none';
+
+  if (!identifier || !password) {
+    msg.textContent = 'Email/Nama dan password wajib diisi.';
+    msg.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ identifier, password })
+    });
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      window.location.href = '/home';
+    } else {
+      msg.textContent = data.message || 'Login gagal.';
+      msg.style.display = 'block';
+    }
+  } catch {
+    msg.textContent = 'Gagal terhubung ke server.';
+    msg.style.display = 'block';
+  }
+});
+
+/* REGISTER */
+document.getElementById('btnRegister').addEventListener('click', async () => {
+  const username = document.getElementById('reg_username').value.trim();
+  const email = document.getElementById('reg_email').value.trim();
+  const password = document.getElementById('reg_password').value;
+  const confirm = document.getElementById('reg_confirm_password').value;
+  const msg = document.getElementById('register_msg');
+  msg.style.display = 'none';
+
+  if (!username || !email || !password || !confirm) {
+    msg.textContent = 'Semua kolom wajib diisi.';
+    msg.style.display = 'block';
+    return;
+  }
+  if (password.length < 6) {
+    msg.textContent = 'Password minimal 6 karakter.';
+    msg.style.display = 'block';
+    return;
+  }
+  if (password !== confirm) {
+    msg.textContent = 'Password dan konfirmasi tidak cocok.';
+    msg.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username, email, password })
+    });
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      window.location.href = data.redirect || '/verify_otp';
+    } else {
+      msg.textContent = data.message || 'Pendaftaran gagal.';
+      msg.style.display = 'block';
+    }
+  } catch {
+    msg.textContent = 'Gagal terhubung ke server.';
+    msg.style.display = 'block';
+  }
+});
+
+/* GOOGLE */
+document.getElementById('btnGoogleLogin').addEventListener('click', () => {
+  location.href = '/login_google';
+});
+document.getElementById('btnGoogleRegister').addEventListener('click', () => {
+  location.href = '/login_google';
+});
+</script>
+</body>
+</html>

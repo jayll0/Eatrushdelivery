@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ makanan.NamaMakanan }} — Detail</title>
+<style>
+    body {
+        margin: 0;
+        background: #FFFAF2;
+        font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        padding-bottom: 100px
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+    .food-img {
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        background: #ddd;
+        display: block
+    }
+
+    .content {
+        padding: 24px;
+        background: #fff;
+        border-radius: 28px 28px 0 0;
+        margin-top: -24px;
+        position: relative;
+        min-height: 300px;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05)
+    }
+
+    .food-name {
+        font-size: 26px;
+        font-weight: 700;
+        color: #8A0000;
+        margin-bottom: 6px;
+        line-height: 1.2
+    }
+
+    .food-price {
+        font-size: 22px;
+        font-weight: 700;
+        color: #333
+    }
+
+    .divider {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 20px 0
+    }
+
+    .desc-box {
+        color: #555;
+        line-height: 1.6;
+        font-size: 15px
+    }
+
+    .desc-label {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 6px;
+        display: block
+    }
+
+    .catatan-section {
+        margin-top: 24px
+    }
+
+    .catatan-input {
+        width: 100%;
+        height: 50px;
+        margin-top: 8px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        padding: 0 14px;
+        font-size: 15px;
+        background: #fff;
+        transition: border 0.2s
+    }
+
+    .catatan-input:focus {
+        border-color: #FF9800;
+        outline: none
+    }
+
+    .qty-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 32px;
+        gap: 24px
+    }
+
+    .qty-btn {
+        width: 48px;
+        height: 48px;
+        background: #fff;
+        border: 1px solid #ddd;
+        color: #333;
+        border-radius: 14px;
+        font-size: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.1s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05)
+    }
+
+    .qty-btn:active {
+        transform: scale(0.92);
+        background: #f5f5f5
+    }
+
+    .qty-value {
+        width: 60px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 700;
+        border: none;
+        background: transparent
+    }
+
+    .action-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        padding: 16px 20px;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: center;
+        z-index: 900
+    }
+
+    .keranjang-btn {
+        width: 100%;
+        max-width: 500px;
+        padding: 16px;
+        background: #FF9800;
+        border: none;
+        border-radius: 99px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3)
+    }
+
+    .keranjang-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        box-shadow: none
+    }
+
+    .keranjang-btn:active {
+        transform: scale(0.98)
+    }
+
+    /* Toast */
+    .toast {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 100px;
+        padding: 12px 24px;
+        border-radius: 50px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        z-index: 9999;
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
+        text-align: center;
+        min-width: 220px;
+        opacity: 0;
+        transition: opacity 0.3s, bottom 0.3s;
+        pointer-events: none;
+        background: #323232
+    }
+
+    .toast.show {
+        opacity: 1;
+        bottom: 110px
+    }
+
+    .toast.error {
+        background: #d32f2f
+    }
+
+    .toast.success {
+        background: #2e7d32
+    }
+
+    /* Modal */
+    .modal-backdrop {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        display: none;
+        backdrop-filter: blur(2px)
+    }
+
+    .modal {
+        width: 85%;
+        max-width: 320px;
+        background: #fff;
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        animation: popIn 0.2s ease-out
+    }
+
+    @keyframes popIn {
+        from {
+            transform: scale(0.9);
+            opacity: 0
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1
+        }
+    }
+
+    .modal h3 {
+        margin: 0 0 12px;
+        color: #8A0000;
+        font-size: 18px
+    }
+
+    .modal p {
+        color: #555;
+        font-size: 15px;
+        margin-bottom: 24px;
+        line-height: 1.5
+    }
+
+    .modal .actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 15px
+    }
+
+    .btn-primary {
+        background: #FF9800;
+        color: #fff
+    }
+
+    .btn-ghost {
+        background: #f0f0f0;
+        color: #333
+    }
+</style>
+</head>
+<body>
+
+<a href="javascript:history.back()" class="back-btn" aria-label="Kembali">←</a>
+
+<img src="{{ makanan.GambarMakanan }}" 
+     class="food-img" 
+     alt="{{ makanan.NamaMakanan }}"
+     onerror="this.src='{{ url_for('static', filename='img/noimage.png') }}'">
+
+<div class="content">
+    <div class="food-name">{{ makanan.NamaMakanan }}</div>
+    <div class="food-price">Rp {{ "{:,.0f}".format(makanan.HargaMakanan) }}</div>
+
+    <div class="divider"></div>
+
+    <div class="desc-box">
+        <span class="desc-label">Deskripsi</span>
+        {{ makanan.DetailMakanan or "Tidak ada deskripsi." }}
+    </div>
+
+    <div class="catatan-section">
+        <label for="catatan" class="desc-label">Catatan Pesanan</label>
+        <input id="catatan" class="catatan-input" type="text" placeholder="Contoh: Pedas, Jangan pakai bawang...">
+    </div>
+
+    <div class="qty-wrapper">
+        <div class="qty-btn" id="btn-minus">−</div>
+        <input type="text" id="qty" class="qty-value" value="1" readonly>
+        <div class="qty-btn" id="btn-plus">+</div>
+    </div>
+</div>
+
+<div class="action-bar">
+    <button id="btn-add" class="keranjang-btn">Tambah — Rp <span id="btn-price">0</span></button>
+</div>
+
+<div id="switchModal" class="modal-backdrop">
+    <div class="modal">
+        <h3>Ganti Warung?</h3>
+        <p>Anda memiliki item dari warung lain. Menambahkan menu ini akan menghapus keranjang sebelumnya.</p>
+        <div class="actions">
+            <button class="btn btn-ghost" id="modal-cancel">Batal</button>
+            <button class="btn btn-primary" id="modal-confirm">Ganti & Hapus</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // --- Data Server ---
+    const MAKANAN_ID = {{ makanan.IdMakanan }};
+    const WARUNG_ID  = {{ makanan.IdWarung }};
+    const HARGA      = {{ makanan.HargaMakanan }};
+    const NAMA_ITEM  = "{{ makanan.NamaMakanan }}";
+    const IMG_ITEM   = "{{ makanan.GambarMakanan }}";
+    
+    // --- Elements ---
+    const qtyInput = document.getElementById('qty');
+    const btnMinus = document.getElementById('btn-minus');
+    const btnPlus  = document.getElementById('btn-plus');
+    const btnAdd   = document.getElementById('btn-add');
+    const btnPrice = document.getElementById('btn-price');
+    const catatanInput = document.getElementById('catatan');
+    const toastEl  = document.getElementById('toast');
+    
+    // --- Modal Elements ---
+    const switchModal = document.getElementById('switchModal');
+    const modalCancel = document.getElementById('modal-cancel');
+    const modalConfirm = document.getElementById('modal-confirm');
+    let pendingPayload = null; 
+
+    // --- Logic Harga ---
+    function updatePrice() {
+        const q = parseInt(qtyInput.value) || 1;
+        const total = q * HARGA;
+        btnPrice.textContent = total.toLocaleString('id-ID');
+    }
+    updatePrice();
+
+    // --- Qty Listeners ---
+    btnMinus.onclick = () => {
+        let v = parseInt(qtyInput.value) || 1;
+        if(v > 1) { qtyInput.value = v - 1; updatePrice(); }
+    };
+    btnPlus.onclick = () => {
+        let v = parseInt(qtyInput.value) || 1;
+        qtyInput.value = v + 1;
+        updatePrice();
+    };
+
+    // --- Toast Function ---
+    function showToast(msg, type='normal') {
+        toastEl.textContent = msg;
+        toastEl.className = 'toast show ' + type;
+        setTimeout(() => toastEl.classList.remove('show'), 2500);
+    }
+
+    // --- ADD TO CART (Core Logic) ---
+    btnAdd.onclick = async () => {
+        const qty = parseInt(qtyInput.value) || 1;
+        const note = catatanInput.value.trim();
+
+        const payload = {
+            id_makanan: MAKANAN_ID,
+            qty: qty,
+            note: note, // Note dikirim ke server
+            id_warung: WARUNG_ID 
+        };
+
+        // Langsung kirim ke server (Server is Authority)
+        await sendToServer(payload);
+    };
+
+    async function sendToServer(payload) {
+        btnAdd.disabled = true;
+        const originalText = btnAdd.innerHTML;
+        btnAdd.textContent = 'Menambahkan...';
+
+        try {
+            const res = await fetch("{{ url_for('keranjang.tambah_keranjang') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await res.json();
+
+            if (data.success) {
+                // 1. Cek apakah ada switch warung
+                if (data.switched_from_warung) {
+                    // Bersihkan storage warung lama
+                    try { localStorage.removeItem('cart:warung:' + data.switched_from_warung); } catch(e){}
+                    cleanOtherCarts(WARUNG_ID);
+                    showToast("Keranjang warung lama dihapus", "normal");
+                } else {
+                    showToast("Berhasil masuk keranjang", "success");
+                }
+
+                // 2. Update LocalStorage (WAJIB: Agar offline/reload tetap ada)
+                updateLocalCart(payload);
+                
+                // 3. Reset UI
+                setTimeout(() => {
+                   btnAdd.disabled = false;
+                   btnAdd.innerHTML = originalText;
+                   // Opsional: Balik ke halaman sebelumnya setelah sukses
+                   // history.back(); 
+                }, 800);
+
+            } else {
+                showToast(data.message || "Gagal menambahkan", "error");
+                btnAdd.disabled = false;
+                btnAdd.innerHTML = originalText;
+            }
+
+        } catch (e) {
+            console.error(e);
+            showToast("Gagal koneksi server", "error");
+            btnAdd.disabled = false;
+            btnAdd.innerHTML = originalText;
+        }
+    }
+
+    // --- Helper: Update LocalStorage dengan Note ---
+    function updateLocalCart(item) {
+        const key = 'cart:warung:' + WARUNG_ID;
+        let cart = [];
+        try { cart = JSON.parse(localStorage.getItem(key)) || []; } catch(e){}
+
+        // CARI ITEM: Harus cocok ID Makanan DAN Catatan (Note)
+        // Ini kuncinya agar "Pedas" dan "Tidak Pedas" tidak jadi satu.
+        const idx = cart.findIndex(c => 
+            c.id_makanan === item.id_makanan && 
+            (c.note || '').trim() === (item.note || '').trim()
+        );
+
+        if (idx >= 0) {
+            // Jika persis sama, update qty
+            cart[idx].qty += item.qty;
+        } else {
+            // Jika beda note (atau baru), tambah baru
+            cart.push({
+                id_makanan: item.id_makanan,
+                nama: NAMA_ITEM,
+                harga: HARGA,
+                qty: item.qty,
+                note: item.note, // Simpan note
+                img: IMG_ITEM
+            });
+        }
+        localStorage.setItem(key, JSON.stringify(cart));
+    }
+
+    // --- Helper: Bersihkan sisa warung lain ---
+    function cleanOtherCarts(activeWarungId) {
+        const activeKey = 'cart:warung:' + activeWarungId;
+        Object.keys(localStorage).forEach(k => {
+            if (k.startsWith('cart:warung:') && k !== activeKey) {
+                localStorage.removeItem(k);
+            }
+        });
+    }
+
+});
+</script>
+
+</body>
+</html>

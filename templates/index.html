@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>EatRush — Selamat Datang</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--accent:#e63946;--muted:#6b7280}
+    body{font-family:Inter,system-ui,Arial;margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ff9a44 0%,#ff6f61 100%);color:#fff}
+    .card{background:rgba(255,255,255,0.95);color:#222;padding:36px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);width:min(420px,92%);text-align:center}
+    h1{margin:0 0 6px;font-size:28px}
+    p{margin:0 0 20px;color:var(--muted)}
+    .btn{display:inline-block;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:600;margin:6px}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-ghost{background:transparent;border:2px solid #fff;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🍽️ EatRush</h1>
+    <p>Selamat datang — masuk untuk mengelola pesanan atau daftar akun baru.</p>
+
+    <a class="btn btn-primary" href="/login">Masuk</a>
+    <a class="btn" href="/register" style="background:#fff;color:#e63946">Daftar</a>
+    <p style="margin-top:14px;color:#666;font-size:13px">atau</p>
+    <a class="btn btn-ghost" href="/makanan">Lihat Daftar Makanan</a>
+  </div>
+</body>
+</html>

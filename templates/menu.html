@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Profil — Akun Saya</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #fffdf5;
+    --muted:#9aa0a6;
+    --accent:#b23a2f; 
+    --card:#f5f7fb;
+    --shadow: 0 10px 24px rgba(17,17,17,0.06);
+    --radius:18px;
+  }
+
+  * { box-sizing:border-box }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .frame{
+    width: 100%;
+    max-width: 480px; /* Sedikit diperlebar untuk mobile modern */
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    position: relative;
+    margin: 0 auto;
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 40;
+    text-decoration: none;
+    color: #333;
+    backdrop-filter: blur(4px);
+    transition: transform 0.2s;
+  }
+  
+  .back-btn:active {
+    transform: scale(0.9);
+  }
+
+  .header {
+    margin-top: 60px;
+    text-align: center;
+    padding: 12px 20px 28px;
+  }
+
+  .profile-screenshot {
+    width: 80px; /* Diperbesar sedikit */
+    height: 80px;
+    margin: 0 auto 15px;
+    border-radius: 50%; /* Lingkaran terlihat lebih modern untuk profil */
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border: 3px solid #fff;
+  }
+
+  .name {
+    font-size: 20px;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-bottom: 4px;
+  }
+
+  .email {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .card {
+    margin-top: 20px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 8px 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 8px;
+    text-decoration: none; /* Penting jika pakai tag a */
+    color: inherit;
+  }
+  
+  .list-item:active {
+    background: rgba(0,0,0,0.03);
+  }
+
+  .list-item + .list-item { 
+    border-top: 1px solid rgba(0,0,0,0.04); 
+  }
+
+  .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .label {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .chev {
+    font-size: 14px;
+    color: #bdbdbd;
+  }
+
+  /* Warna Icon Khusus */
+  .icon.logout { color: #d32f2f; }
+  .icon.shop { color: #f57c00; }
+  .icon.info { color: #1976d2; }
+  .icon.addr { color: #388e3c; }
+
+  @media (max-width:360px){
+    .frame{ padding:14px }
+  }
+</style>
+</head>
+<body>
+
+  <div class="frame" role="region" aria-label="Profil pengguna">
+
+    <a href="{{ url_for('home.home') }}" class="back-btn">←</a>
+
+    <header class="header">
+      <img class="profile-screenshot" 
+           src="{{ url_for('pengguna.get_foto_profil', id=pengguna.IdPengguna) }}?v={{ ts }}" 
+           onerror="this.src='https://via.placeholder.com/150?text=User'"
+           alt="Foto Profil">
+           
+      <div class="name">{{ pengguna.NamaPengguna }}</div>
+      <div class="email">{{ pengguna.Email }}</div>
+    </header>
+
+    <main>
+      <section class="card" aria-labelledby="account-label">
+        <div class="list-item" onclick="location.href='{{ url_for('pengguna.profil') }}';">
+          <div class="icon info">👤</div>
+          <div class="label">Informasi Pribadi</div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="list-item" onclick="location.href='{{ url_for('pengguna.editAlamat') }}';">
+          <div class="icon addr">📍</div>
+          <div class="label">Ubah Alamat</div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="list-item" onclick="location.href='{{ url_for('warung.pendaftaran_warung') }}';">
+          <div class="icon shop">🍽️</div>
+          <div class="label">Daftarkan Warung Anda</div>
+          <div class="chev">›</div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="settings-label">
+        <div class="list-item" onclick="location.href='{{ url_for('auth.logout') }}';">
+          <div class="icon logout">⎋</div>
+          <div class="label">Log Out</div>
+          <div class="chev">›</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedImage = localStorage.getItem("profileImage");
+    if (savedImage) {
+      document.querySelector(".profile-screenshot").src = savedImage;
+    }
+  });
+</script>
+
+</body>
+</html>

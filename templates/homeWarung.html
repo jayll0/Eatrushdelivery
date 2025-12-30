@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Warung - {{ warung.NamaWarung if warung else 'Mitra' }}</title>
+  <style>
+    /* === GAYA UMUM === */
+    :root{--bg:#FFFAF2;--accent:#973131;--orange:#FF9800;--muted:#888}
+    body { 
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        margin:0; 
+        background:var(--bg); 
+        color: #333;
+        -webkit-font-smoothing:antialiased;
+        padding-bottom: 80px; /* Ruang untuk navbar bawah */
+    }
+
+    /* === HEADER === */
+    .header { 
+        padding:15px; 
+        display:flex; 
+        align-items:center; 
+        gap:12px; 
+    }
+    .loc-icon, .profile-icon { 
+        width:45px; height:45px; 
+        background:#fff; border-radius:50%; 
+        display:flex; align-items:center; justify-content:center; 
+        box-shadow:0 2px 6px rgba(0,0,0,0.08); 
+        cursor:pointer; border: none;
+    }
+    .icon-img { width:24px; height:24px; object-fit:contain; }
+    
+    .header-text { flex:1; min-width:0; }
+    .loc-label { font-size:14px; font-weight:700; color:var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .loc-text { font-size:12px; color:#555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    main { padding: 0 15px; }
+    .section-title { font-size: 14px; font-weight: 700; color: var(--accent); margin: 20px 0 10px 0; }
+
+    /* KARTU KEUANGAN */
+    .finance-cards { display:flex; gap:10px; }
+    .finance-card { 
+        flex:1; background:#fff; border-radius:12px; padding:15px; 
+        box-shadow:0 2px 8px rgba(0,0,0,0.04); border:1px solid #eee; 
+    }
+    .finance-label { font-size:11px; color:#666; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .finance-value { font-size:18px; font-weight:800; color:var(--accent); margin-top:8px; }
+    .finance-sub { font-size:10px; color:var(--muted); text-align:right; margin-top:4px; }
+
+    /* GRAFIK */
+    .chart-card { background:#fff; border-radius:12px; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:1px solid #eee; }
+    .chart-wrapper { position:relative; width:100%; height:140px; margin-top:10px; overflow: hidden; }
+    .chart-svg { width:100%; height:100%; display:block; }
+    .chart-xlabels { display:flex; justify-content:space-between; margin-top:10px; font-size:10px; color:var(--muted); }
+
+    /* PRODUK */
+    .products-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; margin-top: 20px; }
+    .link { font-size:12px; color:var(--accent); text-decoration:none; font-weight:600; }
+    
+    .product-list { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .product-card { 
+        background:#fff; border-radius:12px; padding:12px; 
+        border:1px solid #eee; box-shadow:0 2px 6px rgba(0,0,0,0.03); 
+        display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .product-name { font-weight:600; font-size:13px; color:#333; margin-bottom:6px; line-height: 1.3; }
+    .product-price { color:#e67e22; font-weight:700; font-size:13px; }
+    .product-placeholder { grid-column:span 2; padding:30px; text-align:center; color:#999; background:#f9f9f9; border-radius:12px; font-size: 13px; }
+
+    /* FOOTER NAV */
+    .footer { 
+        position:fixed; bottom:0; left:0; width:100%; 
+        background:var(--orange); display:flex; justify-content:space-around; 
+        padding:12px 0; z-index:100; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        border-top-left-radius: 16px; border-top-right-radius: 16px;
+    }
+    .footer button { background:none; border:none; cursor:pointer; padding: 5px; transition: transform 0.1s; }
+    .footer button:active { transform: scale(0.9); }
+    .footer img { width:24px; height:24px; display: block; }
+    
+    /* DROPDOWN TANGGAL (UPDATED) */
+    .date-wrapper { text-align: center; margin-bottom: 10px; position: relative; }
+    .date-select { 
+        display:inline-flex; align-items:center; gap:6px; 
+        background:#fff; padding:6px 14px; border-radius:20px; 
+        font-size:12px; font-weight:600; color:#444; 
+        border:1px solid #ddd; cursor:pointer; 
+    }
+    
+    /* Style Tambahan untuk Menu Dropdown */
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%); /* Posisi tengah relatif terhadap tombol */
+        top: 40px;
+        background-color: #fff;
+        min-width: 160px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        border: 1px solid #eee;
+        z-index: 200;
+        overflow: hidden;
+        text-align: left;
+    }
+    .dropdown-content a {
+        color: #333;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        font-size: 13px;
+        border-bottom: 1px solid #f9f9f9;
+        transition: background 0.2s;
+    }
+    .dropdown-content a:last-child { border-bottom: none; }
+    .dropdown-content a:hover { background-color: #FFF5E6; color: var(--accent); }
+    .show { display: block; }
+
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <button class="loc-icon" onclick="location.href='{{ url_for('warung.edit_alamat_page', id_warung=warung.IdWarung) }}'">
+        <img src="{{ url_for('static', filename='img/iconlokasi.png') }}" class="icon-img" alt="lokasi">
+    </button>
+    
+    <div class="header-text">
+        <div class="loc-label">{{ warung.NamaWarung if warung else 'Warung Belum Terdaftar' }}</div>
+        <div class="loc-text">{{ warung.AlamatWarung if warung else 'Silakan lengkapi data' }}</div>
+    </div>
+    
+    <button class="profile-icon" onclick="location.href='{{ url_for('warung.menu_penjual') }}'">
+        <img src="{{ url_for('static', filename='img/iconprofile.png') }}" class="icon-img" alt="profile">
+    </button>
+  </div>
+
+  <main>
+    <div class="date-wrapper">
+        <button onclick="toggleDateMenu()" class="date-select">
+            <span>
+                {% if request.args.get('days') == '30' %}
+                    30 Hari Terakhir
+                {% elif request.args.get('days') == '90' %}
+                    3 Bulan Terakhir
+                {% else %}
+                    7 Hari Terakhir
+                {% endif %}
+            </span> ▾
+        </button>
+
+        <div id="dateDropdown" class="dropdown-content">
+            <a href="{{ url_for('warung.home_warung', days=7) }}">7 Hari Terakhir</a>
+            <a href="{{ url_for('warung.home_warung', days=30) }}">30 Hari Terakhir</a>
+            <a href="{{ url_for('warung.home_warung', days=90) }}">3 Bulan Terakhir</a>
+        </div>
+    </div>
+
+    <div class="section-title">Ringkasan Keuangan</div>
+    <div class="finance-cards">
+        <div class="finance-card">
+            <div class="finance-label">Pendapatan</div>
+            <div class="finance-value">
+                Rp {{ "{:,.0f}".format(keuangan.total_pendapatan).replace(',', '.') }}
+            </div>
+            <div class="finance-sub">Total kotor</div>
+        </div>
+        <div class="finance-card">
+            <div class="finance-label">Transaksi</div>
+            <div class="finance-value">{{ keuangan.total_transaksi }}</div>
+            <div class="finance-sub">Pesanan selesai</div>
+        </div>
+    </div>
+
+    <div class="section-title">Tren Penjualan</div>
+    <div class="chart-card">
+        <div class="chart-wrapper">
+             <svg class="chart-svg" viewBox="0 0 100 40" preserveAspectRatio="none">
+                <defs>
+                   <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#ff8a00" stop-opacity="0.4" />
+                      <stop offset="100%" stop-color="#ff8a00" stop-opacity="0" />
+                   </linearGradient>
+                </defs>
+
+                {% if chart_rows %}
+                    <path d="M0 40 L{{ chart_polyline.replace(',', ' ') }} L100 40 Z" fill="url(#areaGradient)" />
+                    
+                    <polyline points="{{ chart_polyline }}" fill="none" stroke="#ff8a00" stroke-width="2" 
+                              vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />
+                {% else %}
+                    <polyline points="0,35 100,35" fill="none" stroke="#ccc" stroke-width="2" stroke-dasharray="4" />
+                    <text x="50" y="20" font-size="5" text-anchor="middle" fill="#999">Belum ada data</text>
+                {% endif %}
+             </svg>
+        </div>
+
+        <div class="chart-xlabels">
+            {% if chart_rows %}
+                {% for row in chart_rows %}
+                    <span>{{ row.tgl }}</span> 
+                {% endfor %}
+            {% else %}
+                <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="products-header">
+        <div class="section-title" style="margin:0;">Menu Warung</div>
+        {% if warung %}
+            <a class="link" href="{{ url_for('warung.makanan_tambah',id_warung=warung.IdWarung) }}">Lihat Menu →</a>
+        {% endif %}
+    </div>
+
+    <div class="product-list">
+        {% if makanan %}
+            {% for m in makanan %}
+            <a href="{{ url_for('warung.makanan_edit', id_m=m.IdMakanan) }}" class="product-card" style="text-decoration: none; color: inherit; display: block;">
+                
+                <div style="width: 100%; height: 120px; background: #f9f9f9; border-radius: 8px; overflow: hidden; margin-bottom: 8px;">
+                    <img src="{{ m.GambarMakanan }}" 
+                         alt="{{ m.NamaMakanan }}" 
+                         style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                         onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/noimage.png') }}';">
+                </div>
+
+                <div class="product-name">{{ m.NamaMakanan }}</div>
+                <div class="product-price">
+                    Rp {{ "{:,.0f}".format(m.HargaMakanan).replace(',', '.') }}
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="product-placeholder">
+                Belum ada produk.<br>
+                <small>Tambahkan menu agar warung menarik.</small>
+            </div>
+        {% endif %}
+    </div>
+  </main>
+
+  <div class="footer">
+    <button type="button" onclick="location.href='{{ url_for('pesanan.list_pesanan_penjual') }}'">
+        <img src="{{ url_for('static', filename='img/iconhistory.png') }}" alt="History">
+    </button>
+    <button type="button" onclick="location.reload()">
+        <img src="{{ url_for('static', filename='img/iconhome.png') }}" alt="Home">
+    </button>
+    <button type="button" onclick="location.href='{{ url_for('obrolan.inbox') }}'">
+        <img src="{{ url_for('static', filename='img/iconchat.png') }}" alt="Chat">
+    </button>
+  </div>
+
+  <script>
+    function toggleDateMenu() {
+        document.getElementById("dateDropdown").classList.toggle("show");
+    }
+
+    // Tutup dropdown jika user klik di luar area tombol
+    window.onclick = function(event) {
+        if (!event.target.matches('.date-select') && !event.target.closest('.date-select')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+  </script>
+
+</body>
+</html>

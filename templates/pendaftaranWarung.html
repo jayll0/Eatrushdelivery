@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Daftar Warung — EatRush</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg: #fffef9;
+        --muted: #bda6a0;
+        --accent: #b63b33;
+        --accent-2: #ff9f1a;
+        --card: #fff;
+        --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.08);
+        --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --radius-lg: 18px;
+        --radius-md: 10px;
+        --gap: 14px;
+        --max-width: 420px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        height: 100%;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: var(--bg);
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 28px 12px;
+        color: #222;
+    }
+
+    .container {
+        width: min(94vw, var(--max-width));
+        padding-bottom: 22px;
+    }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 14px;
+    }
+
+    .back-btn {
+        position: static;
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 6px;
+    }
+
+    .logo-text {
+        font-weight: 800;
+        font-size: 20px;
+        color: var(--accent);
+        line-height: 1;
+    }
+
+    .logo-text .rush {
+        color: var(--accent-2);
+        margin-left: 4px;
+    }
+
+    .title {
+        text-align: left;
+        font-weight: 800;
+        color: var(--accent);
+        margin: 14px 0 6px;
+        font-size: 18px;
+    }
+
+    .subtitle {
+        text-align: left;
+        color: var(--muted);
+        margin-bottom: 14px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .card {
+        background: white;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: relative;
+    }
+
+    label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: #f9f9f9;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+        font-size: 14px;
+        color: #222;
+        transition: box-shadow .12s, border-color .12s;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: rgba(182, 59, 51, 0.12);
+        box-shadow: 0 8px 20px rgba(182, 59, 51, 0.06);
+    }
+
+    /* Input File Styling */
+    .input[type="file"] {
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #eee;
+    }
+
+    .char-counter {
+        position: absolute;
+        right: 12px;
+        bottom: 38px;
+        /* Adjusted position */
+        font-size: 10px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 2px 6px;
+        border-radius: 8px;
+        pointer-events: none;
+    }
+
+    .field-error {
+        color: #b23a2f;
+        font-size: 11px;
+        margin-top: -4px;
+        min-height: 16px;
+    }
+
+    .btn {
+        display: block;
+        margin: 14px auto 0;
+        width: 62%;
+        min-width: 160px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 12px 18px;
+        font-weight: 800;
+        font-size: 16px;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 10px 26px rgba(182, 59, 51, 0.16);
+    }
+
+    .btn:active {
+        transform: translateY(1px);
+    }
+
+    /* Alert Messages from Flask Flash */
+    .alert {
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .alert-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .alert-success {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="back-btn" onclick="window.location.href='/'">←</a>
+      <div class="brand">
+        <div class="logo-text">Eat<span class="rush">Rush</span></div>
+      </div>
+    </div>
+
+    <h2 class="title">Daftarkan Warung</h2>
+    <div class="subtitle">Mulai jualan dan kelola warungmu sekarang</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <form id="registerForm" class="form" action="{{ url_for('warung.daftar_warung_submit') }}" method="POST" enctype="multipart/form-data">
+
+        <div class="field">
+          <label for="nama_warung">Nama Warung</label>
+          <input id="nama_warung" name="nama_warung" class="input" type="text" placeholder="Cth: Warung Nasi Bu Ijah" required>
+          <div class="char-counter" id="namaCounter">0/70</div>
+          <div class="field-error" id="namaError"></div>
+        </div>
+
+        <div class="field">
+          <label for="alamat_warung">Alamat Lengkap</label>
+          <input id="alamat_warung" name="alamat_warung" class="input" type="text" placeholder="Jalan, Nomor, RT/RW" required>
+          <div class="field-error" id="alamatError"></div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <div class="field" style="flex: 1;">
+            <label for="jam_buka">Buka</label>
+            <input id="jam_buka" name="jam_buka" class="input" type="time">
+          </div>
+          <div class="field" style="flex: 1;">
+            <label for="jam_tutup">Tutup</label>
+            <input id="jam_tutup" name="jam_tutup" class="input" type="time">
+          </div>
+        </div>
+        <div class="field-error" id="jamError"></div>
+
+        <div class="field">
+          <label for="gambar">Foto Warung (Opsional)</label>
+          <input id="gambar" name="gambar" class="input" type="file" accept="image/*">
+        </div>
+
+        <input type="hidden" name="kordinat" id="kordinat" value="">
+
+        <button type="submit" class="btn">Daftar Sekarang</button>
+      </form>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const form = document.getElementById("registerForm");
+  const nama = document.getElementById("nama_warung");
+  const alamat = document.getElementById("alamat_warung");
+  const jamBuka = document.getElementById("jam_buka");
+  const jamTutup = document.getElementById("jam_tutup");
+
+  const namaError = document.getElementById("namaError");
+  const alamatError = document.getElementById("alamatError");
+  const jamError = document.getElementById("jamError");
+  const namaCounter = document.getElementById("namaCounter");
+
+  const MAX = 70;
+
+  // Real-time Character Counter
+  nama.addEventListener("input", function() {
+    const len = this.value.length;
+    namaCounter.textContent = `${len}/${MAX}`;
+    namaCounter.style.color = len >= MAX ? "#b23a2f" : "#bda6a0";
+    if(len > MAX) {
+       namaError.textContent = "Nama terlalu panjang.";
+    } else {
+       namaError.textContent = "";
+    }
+  });
+
+  function showErrors(errorList) {
+    namaError.textContent = "";
+    alamatError.textContent = "";
+    jamError.textContent = "";
+
+    errorList.forEach((e) => {
+      if (e.field === "nama") namaError.textContent = e.msg;
+      if (e.field === "alamat") alamatError.textContent = e.msg;
+      if (e.field === "jam") jamError.textContent = e.msg;
+    });
+  }
+
+  form.addEventListener("submit", function (e) {
+    const errors = [];
+    
+    // Validasi Nama
+    if (!nama.value.trim()) {
+      errors.push({ field: "nama", msg: "Nama warung wajib diisi." });
+    } else if (nama.value.length > MAX) {
+      errors.push({ field: "nama", msg: `Maksimal ${MAX} karakter.` });
+    }
+
+    // Validasi Alamat
+    if (!alamat.value.trim()) {
+      errors.push({ field: "alamat", msg: "Alamat wajib diisi." });
+    }
+
+    // Validasi Jam (Opsional: Pastikan Buka != Tutup jika diisi)
+    if (jamBuka.value && !jamTutup.value) {
+       errors.push({ field: "jam", msg: "Jam tutup harus diisi jika jam buka diisi." });
+    }
+
+    if (errors.length > 0) {
+      e.preventDefault(); // Stop submit jika ada error di frontend
+      showErrors(errors);
+    }
+    // Jika tidak ada error, form akan tersubmit secara normal ke Python
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Makanan - {{ makanan.get_nama_makanan() }}</title>
+<style>
+  * { 
+    box-sizing: border-box; 
+    margin:0; padding:0; 
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+  }
+
+  body { 
+    background:#FFFDF5; 
+    display:flex; 
+    justify-content:center; 
+    align-items:flex-start; 
+    min-height:100vh; 
+    padding:40px 0; 
+  }
+
+  .screen {
+    width:320px;
+    min-height:100vh;
+    padding:24px 20px 32px;
+    text-align:center;
+    background: transparent;
+  }
+
+  .header { 
+    display:flex; 
+    align-items:center; 
+    margin-bottom:28px; 
+}
+
+  .back-btn {
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+  .header-title { 
+    font-size:13px; 
+    font-weight:500; 
+    color:#555; 
+    margin-left: 10px;
+}
+
+  .avatar-wrapper { 
+    display:flex; 
+    justify-content:center; 
+    margin-bottom:24px; 
+}
+  .avatar {
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    border:2px solid #FF7A1A;
+    overflow:hidden;
+    display:inline-grid;
+    place-items:center;
+    position:relative;
+    background: #fff;
+    cursor:pointer;
+  }
+  .avatar-img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .avatar-overlay {
+    position:absolute;
+    bottom:8px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,0.45);
+    color:#fff;
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:12px;
+    pointer-events:none;
+  }
+  .avatar input[type="file"] { 
+    display:none; 
+    }
+
+  .form-group { 
+    margin-bottom:20px; 
+    text-align: left;
+    }
+  .form-label { 
+    font-size:11px;
+    letter-spacing:0.04em; 
+    font-weight:500; 
+    color:#555; 
+    margin-bottom:6px; 
+    text-transform:uppercase; 
+}
+  .form-control { 
+    width:100%; 
+    padding:12px 14px; 
+    border-radius:8px; 
+    border:none; 
+    outline:none; 
+    background:#F2F6FF; 
+    font-size:13px; 
+    color:#555; 
+}
+
+  .btn-submit { 
+    width:100%; 
+    padding:14px 0; 
+    margin-top:28px; 
+    border:none; 
+    border-radius:8px; 
+    background:#FFA000; 
+    color:#fff; 
+    font-weight:600; 
+    font-size:14px; 
+    cursor:pointer; 
+    box-shadow:0 4px 10px rgba(255,160,0,0.4); 
+}
+  .btn-submit:active {
+     transform:scale(0.98); 
+    }
+
+  .error { 
+    color:#b00020; 
+    font-size:12px; 
+    margin-top:8px; 
+    text-align:center; 
+    display:none; 
+    }
+</style>
+</head>
+<body>
+  <div class="screen">
+
+    <div class="header">
+      <a href="javascript:history.back()" class="back-btn">←</a>
+      <div class="header-title">Edit Makanan</div>
+    </div>
+
+    <form> 
+        <div class="avatar-wrapper">
+        <label class="avatar" title="Klik untuk ganti foto">
+            <img id="preview" src="{{ gambar_url }}" alt="Foto Makanan" class="avatar-img"
+                 onerror="this.src='{{ url_for('static', filename='img/noimage.png') }}'">
+            
+            <div class="avatar-overlay">Ganti</div>
+            <input type="file" id="fileInput" name="gambar" accept="image/*">
+        </label>
+        </div>
+
+        <div id="error" class="error"></div>
+
+        <div class="form-group">
+        <div class="form-label">Nama makanan</div>
+        <input class="form-control" type="text" name="nama" value="{{ makanan.get_nama_makanan() }}" />
+        </div>
+
+        <div class="form-group">
+        <div class="form-label">Harga makanan</div>
+        <input class="form-control" type="number" name="harga" value="{{ makanan.get_harga_makanan() | int }}" />
+        </div>
+
+        <div class="form-group">
+        <div class="form-label">Stok per hari</div>
+        <input class="form-control" type="number" name="stok" value="{{ makanan.get_stok_makanan() }}" />
+        </div>
+
+        <div class="form-group">
+            <div class="form-label">Deskripsi</div>
+            <textarea class="form-control" name="deskripsi" rows="3">{{ makanan.get_deskripsi_makanan() }}</textarea>
+        </div>
+
+        <button type="button" class="btn-submit" onclick="alert('Fitur Simpan Edit belum diaktifkan')">SIMPAN PERUBAHAN</button>
+    </form>
+  </div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const preview = document.getElementById('preview');
+  const errorEl = document.getElementById('error');
+
+  const MAX_SIZE = 2 * 1024 * 1024;
+  const allowedMime = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+
+  fileInput.addEventListener('change', (e) => {
+    errorEl.style.display = 'none';
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (file.size > MAX_SIZE) {
+      showError('Ukuran file terlalu besar. Maks 2 MB.');
+      fileInput.value = '';
+      return;
+    }
+
+    if (!allowedMime.includes(file.type)) {
+      showError('Tipe file tidak didukung. Gunakan JPG/PNG/WebP/GIF.');
+      fileInput.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function () {
+      const base64 = reader.result;
+      // Update preview gambar secara langsung di browser
+      preview.src = base64;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.style.display = 'block';
+  }
+</script>
+</body>
+</html>

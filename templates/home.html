@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home – Delivery App</title>
+<style>
+  body { 
+      font-family: Arial, sans-serif; 
+      margin:0; 
+      background:#FFFAF2; 
+  }
+  
+  .header { 
+      padding:15px; 
+      display:flex; 
+      align-items:center; 
+      gap:12px; 
+  }
+  
+  .loc-icon, .profile-icon { 
+      width:45px; 
+      height:45px; 
+      background:#fff; 
+      border-radius:50%; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      box-shadow:0 0 6px rgba(0,0,0,0.08); 
+      cursor:pointer; 
+  }
+  
+  .icon-img { 
+      width:40px; 
+      height:40px; 
+      object-fit:contain; 
+  }
+  
+  .loc-label { 
+      font-size:13px; 
+      font-weight:700; 
+      color:#973131; 
+  }
+  
+  .loc-text { 
+      font-size:12px; 
+      color:#333; 
+  }
+  
+  h2 { 
+      margin:10px 15px; 
+      font-size:20px; 
+      color:#973131; 
+      line-height:1.3; 
+      font-weight:700; 
+  }
+
+  .controls { 
+      padding: 0 15px 10px 15px; 
+      display:flex; 
+      gap:8px; 
+      align-items:center; 
+      flex-wrap:wrap; 
+  }
+  
+  .search-box { 
+      flex:1; 
+      display:flex; 
+      align-items:center; 
+      background:#FF9800; 
+      padding:8px 12px; 
+      border-radius:30px; 
+  }
+  
+  .search-input { 
+      border:none; 
+      outline:none; 
+      background:transparent; 
+      color:#fff; 
+      font-size:15px; 
+      width:100%; 
+  }
+  
+  .filter-btn { 
+      background:#fff; 
+      color:#333; 
+      padding:8px 12px; 
+      border-radius:999px; 
+      text-decoration:none; 
+      font-size:13px; 
+      border:none; 
+      cursor:pointer; 
+      box-shadow:0 1px 3px rgba(0,0,0,0.06); 
+  }
+  
+  .filter-btn.active { 
+      background:#973131; 
+      color:#fff; 
+  }
+
+  .list-container { 
+      display:grid; 
+      grid-template-columns:repeat(2,1fr); 
+      gap:12px; 
+      padding:15px; 
+      padding-bottom:110px; 
+  }
+  
+  .card { 
+      background:#fff; 
+      border-radius:16px; 
+      padding:10px; 
+      box-shadow:0 2px 8px rgba(0,0,0,0.08); 
+      text-decoration:none; 
+      color:inherit; 
+      display:block; 
+  }
+  
+  .card img { 
+      width:100%; 
+      height:130px; 
+      object-fit:cover; 
+      border-radius:12px; 
+  }
+  
+  .card-title { 
+      font-weight:700; 
+      font-size:13px; 
+      margin-top:8px; 
+      color:#973131; 
+      line-height:1.2; 
+  }
+  
+  .distance { 
+      font-size:11px; 
+      color:#555; 
+      margin-top:4px; 
+  }
+  
+  .small { 
+      font-size:12px; 
+      color:#666; 
+      margin-top:6px; 
+  }
+
+  .footer { 
+      position:fixed; 
+      bottom:0; 
+      left:0; 
+      width:100%; 
+      background:#FF9800; 
+      display:flex; 
+      justify-content:space-around; 
+      padding:10px 0; 
+  }
+  
+  .footer button { 
+      background:none; 
+      border:none; 
+      color:#fff; 
+      font-size:20px; 
+      cursor:pointer; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center;
+  }
+  
+  .footer img { 
+      width:24px; 
+      height:24px; 
+  }
+  
+  .no-results { 
+      padding:20px; 
+      text-align:center; 
+      color:#666; 
+  }
+  
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="location-click" role="button" onclick="location.href='{{ url_for('pengguna.editAlamat') }}';">
+    <div class="loc-icon"><img src="{{ url_for('static', filename='img/iconlokasi.png') }}" class="icon-img" alt="lokasi"></div>
+    <div>
+      <div class="loc-label">Dikirim ke</div>
+      <div class="loc-text">{{ user.Patokan }}</div>
+    </div>
+  </div>
+
+  <div class="profile-icon" style="margin-left:auto" >
+    <img src="{{ url_for('static', filename='img/iconprofile.png') }}" class="icon-img" alt="profile" onclick="location.href='{{ url_for('pengguna.menu') }}';">
+  </div>
+</div>
+
+<h2>Selamat datang, {{ user.NamaPengguna if user and user.NamaPengguna else (user.Email if user and user.Email else 'Pengguna') }}</h2>
+
+<div class="controls">
+  <form id="searchForm" action="{{ url_for('home.home') }}" method="get" style="flex:1; display:flex; gap:8px; align-items:center;">
+    <div class="search-box">
+      <input name="q" class="search-input" type="search" placeholder="Cari warung atau makanan..." value="{{ query if query is defined else '' }}" />
+    </div>
+
+    <input type="hidden" name="type" id="filterType" value="{{ type if type is defined else 'all' }}" />
+    <input type="hidden" name="sort" id="filterSort" value="{{ sort if sort is defined else '' }}" />
+
+    <button type="submit" class="filter-btn">Cari</button>
+  </form>
+
+  <div style="display:flex; gap:6px; margin-left:6px;">
+    <a href="{{ url_for('home.home') }}?type=all{% if query %}&q={{ query|urlencode }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="filter-btn {% if type in [None,'all'] %}active{% endif %}">Semua</a>
+    <a href="{{ url_for('home.home') }}?type=warung{% if query %}&q={{ query|urlencode }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="filter-btn {% if type=='warung' %}active{% endif %}">Warung</a>
+    <a href="{{ url_for('home.home') }}?type=makanan{% if query %}&q={{ query|urlencode }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="filter-btn {% if type=='makanan' %}active{% endif %}">Makanan</a>
+  </div>
+</div>
+
+<div class="controls" style="gap:6px;">
+
+  <a href="{{ url_for('home.home') }}?type={{ type if type else 'all' }}{% if query %}&q={{ query|urlencode }}{% endif %}&sort=sold_high" class="filter-btn {% if sort=='sold_high' %}active{% endif %}">Terjual ↑</a>
+
+</div>
+
+<div class="list-container">
+  {% if warung_list %}
+    {% for w in warung_list %}
+      <a class="card" href="{{ url_for('warung.warung_detail', id_warung=w.IdWarung) }}">
+        {% if w.GambarToko %}
+          <img src="{{ w.GambarToko }}" alt="{{ w.NamaWarung }}">
+        {% else %}
+          <img src="{{ url_for('static', filename='img/placeholder-shop.png') }}" alt="no image">
+        {% endif %}
+        <div class="card-title">{{ w.NamaWarung or '—' }}</div>
+        <div class="distance">{{ w.AlamatWarung or 'Alamat belum tersedia' }}</div>
+    
+        {% if w.total_sold is defined and w.total_sold is not none %}
+          <div class="small">Terjual: {{ w.total_sold }}</div>
+        {% endif %}
+      </a>
+    {% endfor %}
+  {% elif makanan_list %}
+    {% for m in makanan_list %}
+      <a class="card" href="{{ url_for('warung.makanan_detail', id_m=m.IdMakanan) }}">
+        {% if m.GambarMakanan %}
+          <img src="{{ m.GambarMakanan }}" alt="{{ m.NamaMakanan }}">
+        {% else %}
+          <img src="{{ url_for('static', filename='img/placeholder-food.jpg') }}" alt="no image">
+        {% endif %}
+        <div class="card-title">{{ m.NamaMakanan or '—' }}</div>
+        <div class="distance">Rp {{ "{:,.0f}".format(m.HargaMakanan or 0) }}</div>
+        <div class="small"> {% if m.TotalSold is defined and m.TotalSold is not none %} • Terjual: {{ m.TotalSold }}{% endif %}</div>
+      </a>
+    {% endfor %}
+  {% else %}
+    <div class="no-results">Tidak ada data. Coba ubah filter atau kata kunci pencarian.</div>
+  {% endif %}
+</div>
+
+<div class="footer">
+  <a href="{{ url_for('pesanan.pesanan_list') }}">
+    <img src="{{ url_for('static', filename='img/iconhistory.png') }}" alt="history">
+</a>
+  <button type="button" onclick="location.href='{{ url_for('home.home') }}'"><img src="{{ url_for('static', filename='img/iconhome.png') }}" alt="home"></button>
+  <button type="button" onclick="location.href='{{ url_for('obrolan.inbox') }}'"><img src="{{ url_for('static', filename='img/iconchat.png') }}" alt="chat"></button>
+</div>
+
+<script>
+"use strict";
+(function(){
+  var searchInput = document.querySelector(".search-input");
+  if(searchInput){
+    searchInput.addEventListener("keypress", function(e){
+      if(e.key === "Enter"){
+        document.getElementById("searchForm").submit();
+      }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

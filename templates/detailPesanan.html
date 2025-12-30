@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Detail Pesanan #{{ pesanan.IdPesananWarung }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+    :root {
+        --orange: #ff8a00;
+        --orange-dark: #e46e00;
+        --bg: #fff6e9;
+        --text-main: #3b2c21;
+        --text-muted: #9c8c7a;
+        --card: #ffffff;
+        --shadow-soft: 0 10px 20px rgba(0, 0, 0, 0.08);
+        --gray-line: #c8c7c7;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: #f3eee6;
+        font-family: "Poppins", sans-serif;
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+    }
+
+    .phone {
+        width: 420px;
+        max-width: 100%;
+        background: var(--bg);
+        min-height: 100vh;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    header {
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff3de;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .btn-back {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 18px;
+        padding-right: 2px;
+        /* visual center fix */
+    }
+
+    header h1 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    main {
+        flex: 1;
+        padding: 18px;
+        padding-bottom: 40px;
+    }
+
+    /* --- Status Section --- */
+    .eta-section {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .eta-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--orange-dark);
+    }
+
+    .eta-label {
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-top: 4px;
+    }
+
+    .status-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 20px;
+    }
+
+    .progress {
+        margin-left: 8px;
+        border-left: 2px solid var(--gray-line);
+        padding-left: 20px;
+        padding-bottom: 5px;
+        position: relative;
+    }
+
+    .step {
+        position: relative;
+        margin-bottom: 25px;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .step:last-child {
+        margin-bottom: 0;
+    }
+
+    .dot {
+        position: absolute;
+        left: -29px;
+        /* Adjust based on padding + border */
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--gray-line);
+        border: 2px solid #fff;
+    }
+
+    /* Status Logic CSS */
+    .step.completed .dot {
+        background: var(--orange);
+    }
+
+    .step.completed {
+        color: var(--text-main);
+    }
+
+    .step.active .dot {
+        background: var(--orange);
+        box-shadow: 0 0 0 4px rgba(255, 138, 0, 0.2);
+    }
+
+    .step.active {
+        color: var(--orange-dark);
+        font-weight: 600;
+    }
+
+    /* --- Warung Info --- */
+    .current-order {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px dashed #eee;
+    }
+
+    .warung-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .warung-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #eee;
+    }
+
+    .warung-name {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .chat-btn {
+        width: 36px;
+        height: 36px;
+        background: #fff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        color: var(--orange-dark);
+        text-decoration: none;
+    }
+
+    /* --- Order Items --- */
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 10px 0;
+    }
+
+    .order-card {
+        background: #fff;
+        padding: 12px;
+        border-radius: 12px;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .item-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: #eee;
+    }
+
+    .item-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .item-name {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .item-meta {
+        font-size: 11px;
+        color: var(--text-muted);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .item-price {
+        font-weight: 600;
+        color: var(--orange-dark);
+    }
+
+    /* --- Summary --- */
+    .summary {
+        margin-top: 15px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 13px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        color: var(--text-muted);
+    }
+
+    .summary-row.total {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #ddd;
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 10px;
+        color: #aaa;
+        padding-bottom: 20px;
+    }
+</style>
+</head>
+
+<body>
+    <div class="phone">
+        <header>
+            <a href="javascript:history.back()" class="btn-back">←</a>
+            <h1>Detail Pesanan</h1>
+        </header>
+
+        <main>
+            <section class="eta-section">
+                <div class="eta-value">
+                    {% if pesanan.Status == 'Menunggu' %}
+                        Menunggu Konfirmasi
+                    {% elif pesanan.Status == 'Diproses' %}
+                        Sedang Disiapkan
+                    {% elif pesanan.Status == 'Diantar' %}
+                        Sedang Diantar
+                    {% elif pesanan.Status == 'Selesai' %}
+                        Pesanan Selesai
+                    {% elif pesanan.Status == 'Dibatalkan' %}
+                        Dibatalkan
+                    {% else %}
+                        {{ pesanan.Status }}
+                    {% endif %}
+                </div>
+                <div class="eta-label">STATUS PESANAN</div>
+            </section>
+
+            <section class="status-card">
+                <div class="progress">
+                    {% set status = pesanan.Status %}
+                    
+                    {% set s1 = 'completed' if status in ['Diproses', 'Diantar', 'Selesai'] else ('active' if status == 'Menunggu' else 'upcoming') %}
+                    <div class="step {{ s1 }}">
+                        <div class="dot"></div>
+                        <div>Pesanan Dikonfirmasi</div>
+                    </div>
+
+                    {% set s2 = 'completed' if status in ['Diantar', 'Selesai'] else ('active' if status == 'Diproses' else 'upcoming') %}
+                    <div class="step {{ s2 }}">
+                        <div class="dot"></div>
+                        <div>Makanan Sedang Disiapkan</div>
+                    </div>
+
+                    {% set s3 = 'completed' if status == 'Selesai' else ('active' if status == 'Diantar' else 'upcoming') %}
+                    <div class="step {{ s3 }}">
+                        <div class="dot"></div>
+                        <div>Pesanan Sedang Diantar</div>
+                    </div>
+
+                    {% set s4 = 'completed' if status == 'Selesai' else 'upcoming' %}
+                    <div class="step {{ s4 }}">
+                        <div class="dot"></div>
+                        <div>Pesanan Sampai</div>
+                    </div>
+                </div>
+
+                <div class="current-order">
+                    <div class="warung-profile">
+                        <img src="{{ url_for('warung.warung_image', id_warung=pesanan.IdWarung) }}" 
+                             class="warung-img" 
+                             onerror="this.src='{{ url_for('static', filename='img/placeholder-shop.png') }}'">
+                        <div class="warung-name">{{ pesanan.NamaWarung if pesanan.NamaWarung else "Warung" }}</div>
+                    </div>
+                    <a href="{{ url_for('obrolan.mulai_chat_warung', id_warung=pesanan.IdWarung) }}" class="chat-btn" title="Chat Penjual">💬</a>
+                </div>
+            </section>
+
+            <h2 class="section-title">Rincian Menu</h2>
+
+            {% for item in details %}
+            <article class="order-card">
+                <img src="{{ url_for('warung.makanan_image', id_m=item.IdMakanan) }}" 
+                     class="item-img"
+                     onerror="this.src='{{ url_for('static', filename='img/noimage.png') }}'">
+                <div class="item-info">
+                    <div class="item-name">{{ item.NamaMakanan }}</div>
+                    <div class="item-meta">
+                        <span>{{ item.BanyakPesanan }}x @ Rp {{ "{:,.0f}".format(item.HargaMakanan or 0) }}</span>
+                        {% if item.Catatan %}
+                            <span style="font-style:italic; font-size:10px;">Note: {{ item.Catatan }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="item-price" style="text-align: right; margin-top:4px;">
+                        Rp {{ "{:,.0f}".format(item.Subtotal) }}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+
+            <div class="summary">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>Rp {{ "{:,.0f}".format(pesanan.TotalHarga) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Ongkos Kirim</span>
+                    <span>Rp 0</span> </div>
+                <div class="summary-row total">
+                    <span>Total Pembayaran</span>
+                    <span>Rp {{ "{:,.0f}".format(pesanan.TotalHarga) }}</span>
+                </div>
+            </div>
+
+            <footer>
+                <div>No. Pesanan: #{{ pesanan.IdPesananWarung }}</div>
+                <div>Waktu: {{ pesanan.DibuatPada }}</div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Reload halaman setiap 15 detik jika status belum selesai
+        // agar user tahu progress terbaru
+        const currentStatus = "{{ pesanan.Status }}";
+        if (['Menunggu', 'Diproses', 'Diantar'].includes(currentStatus)) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 15000);
+        }
+    </script>
+</body>
+</html>

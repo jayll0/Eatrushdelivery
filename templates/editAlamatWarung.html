@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Edit Lokasi</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+  :root{
+    --bg: #fffdf5;
+    --muted: #9aa0a6;
+    --accent: #ff9f1a;
+    --card: #f6f7fb;
+    --shadow-strong: 0 14px 35px rgba(0,0,0,0.06);
+    --shadow-soft: 0 6px 18px rgba(0,0,0,0.06);
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --gap: 14px;
+    --max-width: 380px;
+    --map-height: 300px;
+    --focus: 3px solid rgba(255,159,26,0.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html,body { height:100%; }
+  body {
+    margin:0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Poppins", sans-serif;
+    background: var(--bg);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:22px;
+    color:#222;
+  }
+
+  .frame {
+    width: min(calc(100vw - 40px), var(--max-width));
+    background: var(--bg);
+    border-radius: 18px;
+    box-shadow: var(--shadow-strong);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .map-area {
+    height: var(--map-height);
+    background: #e5e5e5;
+    position: relative;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* Pesan Error jika Map Gagal Load */
+  .map-error-msg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+    z-index: 0;
+    width: 80%;
+  }
+
+  .back {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+    box-shadow: var(--shadow-soft);
+    font-size: 20px;
+    text-decoration: none;
+  }
+
+  .center-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 32px;
+    height: 32px;
+    transform: translate(-50%, -100%);
+    z-index: 1100;
+    pointer-events: none; /* PENTING: Agar klik tembus ke peta */
+  }
+  .pin-icon {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+  }
+
+  .content {
+    padding: 18px;
+    background: var(--bg);
+    flex: 1;
+  }
+
+  .label {
+    display:block;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing: .04em;
+  }
+
+  .input {
+    width:100%;
+    padding:12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    background: #f2f6ff;
+    font-size:14px;
+    color: #222;
+    margin-bottom: var(--gap);
+    transition: 0.2s;
+  }
+  .input:focus { 
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+  }
+  
+  #titik {
+      color: #666;
+      background: #eee;
+      cursor: context-menu; 
+      font-family: monospace;
+  }
+
+  .hint {
+    font-size:12px;
+    color:var(--muted);
+    margin-top: -8px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .back-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #555;
+      font-size: 20px;
+      margin-right: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  .btn-save {
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    background: var(--accent);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: 0 8px 20px rgba(255,128,0,0.2);
+    font-size: 14px;
+    transition: transform 0.1s;
+  }
+  .btn-save:active { transform: scale(0.98); }
+  .btn-save:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+</style>
+</head>
+<body>
+
+<div class="frame">
+    <a href="{{ url_for('warung.home_warung') }}" class="back-button">←</a>
+  <div class="map-area">
+    <div class="map-error-msg">Peta gagal dimuat.<br>Cek koneksi internet Anda.</div>
+    <div id="map"></div>
+    
+
+
+    <div class="center-marker">
+      <svg class="pin-icon" viewBox="0 0 24 24" fill="#FF7A1A" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM12 11.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        <path d="M0 0h24v24H0z" fill="none"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="content">
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+    <label class="label" for="titik">Titik Koordinat</label>
+    <input id="titik" class="input" readonly placeholder="Sedang memuat...">
+
+    <label class="label" for="patokan">Alamat lengkap</label>
+    <input id="patokan" class="input" placeholder="Contoh: Jalan Telekomunikasi...." value="{{ current_alamat or '' }}">
+
+    <div class="hint">Geser peta agar ujung pin oranye berada tepat di lokasi Anda.<br>(Klik peta untuk pindah cepat)</div>
+
+    <button id="saveBtn" class="btn-save">SIMPAN LOKASI</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  if (typeof L === 'undefined') {
+      document.getElementById('titik').value = "Error: Peta gagal dimuat.";
+      alert("Gagal memuat peta. Pastikan koneksi internet lancar.");
+  } else {
+
+      const savedCoord = "{{ current_kordinat or '' }}"; 
+      
+      let initialLat = -6.175392;
+      let initialLng = 106.827153;
+
+      if(savedCoord && savedCoord.includes(',')) {
+          const parts = savedCoord.split(',');
+          if(parts.length === 2 && !isNaN(parts[0])) {
+              initialLat = parseFloat(parts[0]);
+              initialLng = parseFloat(parts[1]);
+          }
+      }
+
+      const map = L.map('map', {
+          center: [initialLat, initialLng],
+          zoom: 15,
+          zoomControl: false 
+      });
+
+      map.on('click', function(e) {
+          map.flyTo(e.latlng, map.getZoom()); 
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap',
+          maxZoom: 19
+      }).addTo(map);
+
+      const titikInput = document.getElementById('titik');
+      const patokanInput = document.getElementById('patokan');
+      const saveBtn = document.getElementById('saveBtn');
+
+      function updateInput() {
+          const center = map.getCenter();
+          const lat = center.lat.toFixed(6);
+          const lng = center.lng.toFixed(6);
+          titikInput.value = `${lat},${lng}`;
+      }
+
+      map.on('move', updateInput);
+      updateInput();
+
+      if (!savedCoord && navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  const { latitude, longitude } = position.coords;
+                  map.flyTo([latitude, longitude], 17);
+              },
+              (err) => { console.warn("GPS User denied/error:", err); },
+              { enableHighAccuracy: true }
+          );
+      }
+
+      saveBtn.addEventListener('click', async () => {
+          const kordinat = titikInput.value;
+          const alamatValue = patokanInput.value; 
+          const csrfToken = document.getElementById('csrf_token').value;
+
+          if(!kordinat || kordinat.includes("Error")) return alert("Peta belum siap.");
+
+          saveBtn.textContent = "Menyimpan...";
+          saveBtn.disabled = true;
+
+          try {
+              const formData = new FormData();
+              formData.append('kordinat', kordinat);
+              formData.append('alamat', alamatValue);
+              
+              const url = "{{ url_for('warung.simpan_alamat_warung', id_warung=warung.get_id_warung()) }}";
+
+              const response = await fetch(url, {
+                  method: 'POST',
+                  body: formData,
+                  headers: { 'X-CSRFToken': csrfToken }
+              });
+              
+              const result = await response.json().catch(() => ({}));
+
+              if(response.ok && result.status === 'success') {
+                 window.location.href = "{{ url_for('warung.home_warung') }}";
+              } else {
+                  alert("Gagal menyimpan: " + (result.message || "Error server"));
+                  saveBtn.textContent = "SIMPAN LOKASI";
+                  saveBtn.disabled = false;
+              }
+          } catch (e) {
+              console.error(e);
+              alert("Terjadi kesalahan jaringan.");
+              saveBtn.textContent = "SIMPAN LOKASI";
+              saveBtn.disabled = false;
+          }
+      });
+  }
+</script>
+</body>
+</html>

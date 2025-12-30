@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Detail Menu</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #FFFAF2;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Back Button */
+    .back-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 45px;
+        height: 45px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 22px;
+        cursor: pointer;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+    /* Image */
+    .food-img {
+        width: 100%;
+        height: 260px;
+        object-fit: cover;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .food-name {
+        font-size: 22px;
+        font-weight: bold;
+        color: #8A0000;
+    }
+
+    .food-price {
+        margin-top: 5px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    /* Deskripsi Box */
+    .desc-box {
+        margin-top: 15px;
+        padding: 12px;
+        border: 1px solid #973131;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .desc-title {
+        font-weight: bold;
+        color: #973131;
+        margin-bottom: 5px;
+    }
+
+    /* Catatan */
+    .catatan-label {
+        margin-top: 25px;
+        font-weight: bold;
+        color: #973131;
+    }
+
+    .catatan-input {
+        width: 100%;
+        height: 45px;
+        margin-top: 8px;
+        border-radius: 10px;
+        border: 1px solid #555;
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    /* Quantity Buttons */
+    .qty-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 25px;
+        gap: 25px;
+    }
+
+    .qty-btn {
+        width: 40px;
+        height: 40px;
+        background: #973131;
+        color: #fff;
+        border-radius: 6px;
+        font-size: 26px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .qty-value {
+        width: 40px;
+        height: 35px;
+        text-align: center;
+        border-radius: 6px;
+        border: 1px solid #999;
+        font-size: 18px;
+    }
+
+    /* Button Keranjang */
+    .keranjang-btn {
+        margin: 28px auto;
+        width: 85%;
+        padding: 14px;
+        background: #FF9800;
+        border: none;
+        border-radius: 40px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff;
+        display: block;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- Back Button -->
+<div class="back-btn" onclick="javascript:history.back()">←</div>
+
+<!-- Food Image -->
+<img src="nasgor.jpg" class="food-img">
+
+<div class="content">
+
+    <div class="food-name">Nasi Goreng Pedas Manis</div>
+    <div class="food-price">Rp 17.000</div>
+
+    <!-- Deskripsi -->
+    <div class="desc-box">
+        <div class="desc-title">Deskripsi</div>
+        Nasi Goreng Pedas seperti mata mahasiswa setelah mengerjakan IMPAL,
+        namun manis seperti omongan kating organisasi.
+    </div>
+
+    <!-- Catatan -->
+    <div class="catatan-label">Catatan untuk warung</div>
+    <input class="catatan-input" type="text" placeholder="Tambahkan catatan...">
+
+    <!-- Quantity -->
+    <div class="qty-wrapper">
+        <div class="qty-btn" onclick="kurang()">−</div>
+        <input type="text" id="qty" class="qty-value" value="1" readonly>
+        <div class="qty-btn" onclick="tambah()">+</div>
+    </div>
+
+    <!-- Tambah ke Keranjang -->
+    <button class="keranjang-btn" onclick="tambahKeranjang()">
+        Tambah ke keranjang
+    </button>
+
+</div>
+
+<!-- JS -->
+<script>
+    let qty = 1;
+
+    function tambah() {
+        qty++;
+        document.getElementById("qty").value = qty;
+    }
+
+    function kurang() {
+        if (qty > 1) {
+            qty--;
+            document.getElementById("qty").value = qty;
+        }
+    }
+
+    function tambahKeranjang() {
+        alert("Menu berhasil ditambahkan ke keranjang!");
+    }
+</script>
+
+</body>
+</html>

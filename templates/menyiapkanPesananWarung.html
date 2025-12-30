@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pesanan Sedang Disiapkan</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --primary:#973131;
+      --accent:#FF9800;
+      --bg:#FFFAF2;
+      --card:#fff;
+      --muted:#666;
+    }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:#222;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .app{
+      min-height:100vh;
+      padding-bottom:120px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* HEADER */
+    .app-header{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      padding:18px 16px;
+    }
+    .back-btn{
+      position:absolute;
+      left:14px;
+      top:12px;
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      border:none;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      color:var(--primary);
+      cursor:pointer;
+    }
+    .header-title{
+      font-weight:900;
+      font-size:20px;
+      color:var(--primary);
+      text-align:center;
+    }
+
+    main.app-body{
+      padding:18px;
+      flex:1;
+    }
+
+    /* STEPPER */
+    .stepper{
+      border-radius:14px;
+      border:1px solid rgba(151,49,49,0.08);
+      background:linear-gradient(180deg,#fffaf4,#fffefc);
+      padding:16px;
+      margin-bottom:22px;
+    }
+
+    .step{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:15px;
+      color:#2f2f2f;
+      position:relative;
+      padding-bottom:10px;
+    }
+
+    .step:last-child{
+      padding-bottom:0;
+    }
+
+    .step-dot{
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      border:2px solid var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      position:relative;
+      background:#fff;
+    }
+
+    /* Logic pewarnaan step */
+    .step-dot.filled::before{
+      content:"";
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      background:var(--primary);
+    }
+
+    .step:not(:last-child)::after{
+      content:"";
+      position:absolute;
+      left:8px;
+      top:22px;
+      width:2px;
+      height:18px;
+      background:rgba(151,49,49,0.25);
+    }
+
+    /* ALAMAT + MAP */
+    .section-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--primary);
+      margin-bottom:6px;
+      margin-top:4px;
+    }
+
+    .address-box{
+      font-size:14px;
+      color:#333;
+      margin-bottom:12px;
+      line-height: 1.4;
+    }
+
+    .map-placeholder{
+      width:100%;
+      height:210px;
+      border-radius:14px;
+      overflow:hidden;
+      background:#e5e7eb;
+      margin-bottom:18px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.06);
+      /* Pastikan z-index map di bawah elemen fixed */
+      z-index: 1; 
+    }
+
+    /* CARD INFO */
+    .card{
+      border-radius:14px;
+      border:1px solid rgba(151,49,49,0.08);
+      background:linear-gradient(180deg,#fffaf4,#fffefc);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:15px;
+      color:#2f2f2f;
+    }
+    .row .label{
+      color:var(--primary);
+      font-weight:700;
+      font-size:15px;
+    }
+
+    a.link{
+      font-size:14px;
+      color:var(--primary);
+      text-decoration:underline;
+      margin-top:4px;
+      display:inline-block;
+      cursor:pointer;
+    }
+
+    /* BOTTOM ACTIONS */
+    .bottom-actions-inline{
+      position:fixed;
+      left:16px;
+      right:16px;
+      bottom:18px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      z-index:1200;
+    }
+    
+    /* Tombol Antar kita buat width 100% karena sendirian */
+    .bottom-actions-inline form {
+        width: 100%;
+    }
+
+    .primary-btn{
+      width:100%;
+      border-radius:12px;
+      padding:14px 16px;
+      border:none;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 8px 24px rgba(151,49,49,0.12);
+    }
+
+    @media(min-width:720px){
+      .app-body{ padding:24px 120px 160px;}
+      .bottom-actions-inline{ left:120px; right:120px; bottom:24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header" role="banner">
+      <button class="back-btn" onclick="history.back()" aria-label="Kembali">←</button>
+      <div class="header-title">{{ pesanan.NamaPembeli }}</div>
+    </header>
+
+    <main class="app-body" role="main">
+      <div class="stepper" aria-label="Status pesanan">
+        <div class="step">
+          <div class="step-dot filled"></div>
+          <span style="font-weight:bold; color:var(--primary);">Warung sedang menyiapkan</span>
+        </div>
+        <div class="step">
+          <div class="step-dot"></div>
+          <span>Pesanan sedang diantar</span>
+        </div>
+        <div class="step">
+          <div class="step-dot"></div>
+          <span>Pesanan diterima</span>
+        </div>
+      </div>
+
+      <div class="section-title">Alamat Pengantaran</div>
+      <div class="address-box">
+        {{ pesanan.Alamat or 'Hubungi pembeli untuk detail alamat pengantaran' }}
+      </div>
+
+      <div class="map-placeholder" id="map"></div>
+
+      <div class="card" role="region" aria-label="Ringkasan Pesanan">
+        <div class="row">
+          <span class="label">Total Harga</span>
+          <span id="priceValue">Rp {{ "{:,.0f}".format(pesanan.TotalHarga) }}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">Jumlah Item</span>
+          <span id="qtyValue">{{ pesanan.TotalItem }} Item</span>
+        </div>
+
+        <a class="link" id="detailLink">Lihat Rincian Menu</a>
+      </div>
+    </main>
+
+    <div class="bottom-actions-inline" role="region" aria-label="Aksi Pesanan">
+       <form action="{{ url_for('pesanan.antar_pesanan', id_pesanan=pesanan.IdPesananWarung) }}" 
+             method="POST"
+             onsubmit="return confirm('Apakah pesanan sudah siap dan akan segera diantar?');">
+             
+            <button type="submit" class="primary-btn">
+                Mulai Antar Pesanan
+            </button>
+       </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // 1. Setup Peta
+    // Mengambil data kordinat dari backend
+    const kordinatString = "{{ pesanan.Kordinat or '' }}"; 
+
+    // Default lokasi (Monas/Jakarta) jika data kosong
+    let lat = -6.1754;
+    let lng = 106.8272;
+
+    // Parsing "lat,long"
+    if(kordinatString && kordinatString.includes(',')) {
+        const split = kordinatString.split(',');
+        const pLat = parseFloat(split[0]);
+        const pLng = parseFloat(split[1]);
+        if(!isNaN(pLat) && !isNaN(pLng)){
+            lat = pLat;
+            lng = pLng;
+        }
+    }
+
+    const map = L.map('map', {
+        center: [lat, lng],
+        zoom: 15,
+        zoomControl: false // UI Minimalis
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Marker lokasi pembeli
+    L.marker([lat, lng]).addTo(map)
+        .bindPopup("Lokasi Pengantaran")
+        .openPopup();
+
+    // 2. Setup Tombol Detail
+    // Menampilkan alert sederhana isi menu (bisa dikembangkan jadi modal)
+    document.getElementById('detailLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      // Mengambil deskripsi dari backend jika ada, atau teks statis
+      const note = `{{ pesanan.DeskripsiPesanan or 'Tidak ada catatan khusus.' }}`;
+      alert("Catatan Pesanan:\n" + note);
+    });
+
+    // Catatan: Tidak perlu script localStorage atau redirect manual
+    // karena tombol 'Antar' sudah menggunakan form submission HTML standar.
+  </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Lupa Password | EatRush</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #FFF7E0;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 90%;
+      max-width: 1000px;
+      gap: 2rem;
+    }
+    .left {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    h2.title {
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 3rem;
+      margin: 0;
+    }
+    h2.title .eat {
+      color: #973133;
+    }
+    h2.title .rush {
+      color: #FF9800;
+    }
+    .right {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background-color: #FDBE4C;
+      border-radius: 25px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+    }
+    h2 {
+      color: #8C2D19;
+      margin-bottom: 1.5rem;
+    }
+    input {
+      width: 90%;
+      padding: 1rem;
+      border-radius: 15px;
+      border: none;
+      margin-bottom: 1rem;
+      background-color: #8C2D19;
+      color: white;
+    }
+    input::placeholder {
+      color: rgba(255,255,255,0.8);
+    }
+    input:focus {
+      outline: 2px solid #a83a24;
+      background-color: #9e3a1e;
+    }
+    button {
+      width: 100%;
+      padding: 1rem;
+      border-radius: 15px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: bold;
+    }
+    button.primary {
+      background-color: #8C2D19;
+      color: white;
+      font-size: 1.1rem;
+    }
+    button.primary:hover {
+      background-color: #a83a24;
+    }
+    .msg {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+        height: auto;
+        padding: 2rem 0;
+      }
+      .container {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1rem;
+      }
+      .left {
+        order: 1;
+        margin-bottom: 1.5rem;
+      }
+      h2.title {
+        font-size: 2.5rem;
+      }
+      .right {
+        order: 2;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container fade-in">
+    <div class="left">
+      <h2 class="title">
+        <span class="eat">Eat</span><span class="rush">Rush</span>
+      </h2>
+    </div>
+
+    <div class="right">
+      <div class="card" id="authCard">
+        <h2>Lupa Password</h2>
+        <div id="step_email">
+          <input id="email" type="email" placeholder="Masukkan Email Anda" required>
+          <button id="btnSendOTP" class="primary">Kirim OTP</button>
+          <div id="msg_email" class="msg"></div>
+        </div>
+
+        <input type="text" name="fake_usern" id="fake_usern" style="display:none" autocomplete="username">
+        <input type="password" name="fake_pass" id="fake_pass" style="display:none" autocomplete="current-password">
+
+        <div id="step_otp" class="hidden" autocomplete="off">
+          <input id="otp" type="text" placeholder="Masukkan OTP" maxlength="6" required autocomplete="one-time-code">
+          <input id="new_password" name="np_1" type="password" placeholder="Password Baru" required autocomplete="new-password" inputmode="text">
+          <input id="confirm_password" name="confirm_np" type="password" placeholder="Konfirmasi Password" required autocomplete="new-password">
+          <button id="btnReset" class="primary">Reset Password</button>
+          <div id="msg_otp" class="msg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btnSendOTP = document.getElementById('btnSendOTP');
+    const btnReset = document.getElementById('btnReset');
+    const emailInput = document.getElementById('email');
+    const otpInput = document.getElementById('otp');
+    const passInput = document.getElementById('new_password');
+    const confirmInput = document.getElementById('confirm_password');
+    const msgEmail = document.getElementById('msg_email');
+    const msgOtp = document.getElementById('msg_otp');
+
+    async function showOtpStep() {
+      document.getElementById('step_email').classList.add('hidden');
+      const stepOtp = document.getElementById('step_otp');
+      stepOtp.classList.remove('hidden');
+      passInput.value = '';
+      confirmInput.value = '';
+      setTimeout(() => document.getElementById('otp').focus(), 50);
+    }
+
+    btnSendOTP.onclick = async () => {
+      msgEmail.textContent = 'Mengirim OTP...';
+      msgEmail.style.display = 'block';
+      const res = await fetch('/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `email=${encodeURIComponent(emailInput.value)}`
+      });
+      const data = await res.json();
+      msgEmail.textContent = data.message;
+      if (data.status === 'ok') showOtpStep();
+    };
+
+    btnReset.onclick = async () => {
+      msgOtp.textContent = 'Memproses...';
+      msgOtp.style.display = 'block';
+      if (passInput.value !== confirmInput.value) {
+        msgOtp.textContent = 'Password tidak cocok';
+        msgOtp.style.color = 'red';
+        return;
+      }
+      const res = await fetch('/reset_password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `otp=${encodeURIComponent(otpInput.value)}&new_password=${encodeURIComponent(passInput.value)}`
+      });
+      const data = await res.json();
+      msgOtp.textContent = data.message;
+      if (data.status === 'success') {
+        msgOtp.style.color = 'green';
+        setTimeout(() => {
+          window.location.href = '/auth';
+        }, 2000);
+      } else {
+        msgOtp.style.color = 'red';
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Warung</title>
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  body{background:#FFFDF5;display:flex;justify-content:center;padding:40px 0}
+  .screen{width:320px;min-height:100vh;padding:24px 20px 32px}
+  .header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+  .back-btn{width:32px;height:32px;border-radius:50%;background:#f2f3f7;border:none;font-size:18px;text-decoration:none;display:grid;place-items:center}
+  .header-title{font-size:13px;font-weight:500;color:#555}
+
+  .avatar-wrapper{display:flex;justify-content:center;margin-bottom:24px}
+  .avatar{width:160px;height:160px;border-radius:50%;border:2px solid #FF7A1A;overflow:hidden;position:relative;cursor:pointer}
+  .avatar-img{width:100%;height:100%;object-fit:cover}
+  .avatar-overlay{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.45);color:#fff;font-size:12px;padding:6px 10px;border-radius:12px}
+  .avatar input{display:none}
+
+  .form-group{margin-bottom:20px}
+  .form-label{font-size:11px;letter-spacing:.04em;font-weight:500;color:#555;margin-bottom:6px;text-transform:uppercase}
+  .form-control{width:100%;padding:12px 14px;border-radius:8px;border:none;background:#F2F6FF;font-size:13px}
+
+  .btn-submit{width:100%;padding:14px 0;margin-top:28px;border:none;border-radius:8px;background:#FFA000;color:#fff;font-weight:600;font-size:14px;cursor:pointer}
+  .back-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #555;
+      font-size: 20px;
+      margin-right: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+</style>
+</head>
+
+<body>
+<div class="screen">
+
+  <div class="header">
+    <a href="{{ url_for('warung.profil_warung') }}" class="back-button">←</a>
+    <div class="header-title">Edit Warung</div>
+  </div>
+
+  <form method="POST" 
+        action="{{ url_for('warung.edit_profil_warung') }}" 
+        enctype="multipart/form-data">
+
+    <div class="avatar-wrapper">
+      <label class="avatar">
+        <img src="{{ warung.GambarToko }}?v={{ range(1,10000)|random }}" 
+             onerror="this.src='https://via.placeholder.com/160?text=No+Image'" 
+             class="avatar-img" 
+             id="preview" 
+             alt="Foto Warung">
+
+        <div class="avatar-overlay">Ganti</div>
+        <input type="file" name="gambar" accept="image/*" id="fileInput">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">Nama Warung</div>
+      <input class="form-control" 
+             type="text" 
+             name="nama_warung" 
+             value="{{ warung.NamaWarung }}" 
+             required>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">Alamat Warung</div>
+      <textarea class="form-control" name="alamat_warung" rows="3">{{ warung.AlamatWarung }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">Nomor Telepon</div>
+      <input class="form-control" 
+             type="text" 
+             name="nomor_telepon" 
+             value="{{ warung.NomorTeleponWarung or '' }}"
+             placeholder="08xxxxxxxx">
+    </div>
+
+    <div class="form-row" style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+          <div class="form-label">Jam Buka</div>
+          <input class="form-control" 
+                 type="time" 
+                 name="jam_buka" 
+                 value="{{ warung.JamBuka }}">
+        </div>
+
+        <div class="form-group" style="flex: 1;">
+          <div class="form-label">Jam Tutup</div>
+          <input class="form-control" 
+                 type="time" 
+                 name="jam_tutup" 
+                 value="{{ warung.JamTutup }}">
+        </div>
+    </div>
+
+    <button type="submit" class="btn-submit">SIMPAN PERUBAHAN</button>
+  </form>
+</div>
+<script>
+    document.getElementById('fileInput').onchange = function (evt) {
+        var tgt = evt.target || window.event.srcElement,
+            files = tgt.files;
+        if (FileReader && files && files.length) {
+            var fr = new FileReader();
+            fr.onload = function () {
+                document.getElementById('preview').src = fr.result;
+            }
+            fr.readAsDataURL(files[0]);
+        }
+    }
+</script>
+</body>
+</html>

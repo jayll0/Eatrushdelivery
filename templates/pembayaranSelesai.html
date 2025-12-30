@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pembayaran Berhasil</title>
+  
+  {% if id_pesanan %}
+  <meta http-equiv="refresh" content="5;url={{ url_for('pesanan.pesanan_detail', id_pesanan=id_pesanan) }}">
+  {% endif %}
+
+  <style>
+    * {
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+    }
+
+    body {
+        margin: 0;
+        background: #fffef4
+    }
+
+    .app {
+        max-width: 420px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #fffef4
+    }
+
+    .topbar {
+        padding: 12px;
+        display: flex;
+        align-items: center
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+    main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 24px
+    }
+
+    .title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a9b3b;
+        margin-bottom: 16px
+    }
+
+    .check-circle {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 4px solid #1a9b3b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px
+    }
+
+    .check-circle span {
+        font-size: 44px;
+        color: #1a9b3b
+    }
+
+    .subtitle {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a9b3b;
+        margin-bottom: 8px
+    }
+
+    .muted {
+        color: #555;
+        margin-top: 8px
+    }
+
+    .order-box {
+        margin-top: 14px;
+        padding: 12px 16px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06)
+    }
+
+    .order-id {
+        font-weight: 700;
+        color: #333
+    }
+
+    .order-note {
+        font-size: 13px;
+        color: #666;
+        margin-top: 6px
+    }
+
+    .footer {
+        padding: 16px 16px 24px;
+        display: flex;
+        gap: 8px;
+        flex-direction: column
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px
+    }
+
+    .track-btn,
+    .home-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 999px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        /* Agar teks di tengah vertikal */
+        align-items: center;
+        justify-content: center;
+    }
+
+    .track-btn {
+        background: #8b2a22;
+        color: #fff;
+        border: 0;
+    }
+
+    .home-btn {
+        background: #fff;
+        border: 1px solid #e7e2db;
+        color: #8b2a22;
+    }
+
+    .small {
+        font-size: 13px;
+        color: #777;
+        margin-top: 6px
+    }
+
+    .countdown {
+        font-weight: 600;
+        color: #8b2a22
+    }
+</style>
+</head>
+<body>
+  <div class="app" role="main">
+    <header class="topbar">
+      <a href="javascript:history.back()" class="back-btn">←</a>
+    </header>
+
+    <main aria-live="polite">
+      <h1 class="title">Pembayaran Berhasil</h1>
+
+      <div class="check-circle" aria-hidden="true">
+        <span>✓</span>
+      </div>
+
+      <div class="subtitle">Pesanan dikonfirmasi!</div>
+
+      {% if pesan %}
+        <div class="muted">{{ pesan }}</div>
+      {% endif %}
+
+      {% if id_pesanan %}
+        <div class="order-box" aria-label="Nomor pesanan">
+          <div class="order-id">Nomor Pesanan: #{{ id_pesanan }}</div>
+          <div class="order-note">Simpan nomor pesanan untuk pelacakan.</div>
+        </div>
+      {% endif %}
+
+      <div class="small" id="autoMsg">
+        Kamu akan diarahkan ke detail pesanan dalam <span class="countdown">5</span> detik.
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="actions">
+        <a href="{{ url_for('pesanan.pesanan_detail', id_pesanan=id_pesanan) }}" class="track-btn">
+            Lihat Pesanan
+        </a>
+        
+        <a href="{{ url_for('home.home') }}" class="home-btn">
+            Kembali ke Beranda
+        </a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

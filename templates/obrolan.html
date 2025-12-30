@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kotak Masuk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #fffaf0;
+        margin: 0;
+        padding: 0;
+        color: #3f3030;
+    }
+
+    .container {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 40;
+        text-decoration: none;
+        color: #333;
+        backdrop-filter: blur(4px)
+    }
+
+    .header h1 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #9a3f35;
+        margin: 0;
+        flex-grow: 1;
+        text-align: center;
+        margin-right: 24px;
+    }
+
+    /* List Chat */
+    .chat-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .chat-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+    }
+
+    .chat-item:hover {
+        background-color: #fff5e6;
+    }
+
+    .avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        background: white;
+        font-size: 20px;
+        color: #555;
+    }
+
+    .chat-info {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .chat-name {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+        color: #333;
+    }
+
+    .chat-preview {
+        font-size: 12px;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-left: 10px;
+    }
+
+    .chat-time {
+        font-size: 11px;
+        color: #999;
+        margin-bottom: 4px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+        display: block;
+        opacity: 0.5;
+    }
+
+    /* Footer Nav (Agar konsisten dengan Home) */
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #FF9800;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+    }
+
+    .footer button {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .footer img {
+        width: 24px;
+        height: 24px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <button onclick="history.back()" class="back-btn">←</button>
+        <h1>Kotak Masuk</h1>
+    </div>
+
+    <div class="chat-list" id="chatList">
+        {% if kontak|length == 0 %}
+            <div class="empty-state">
+                <span class="empty-icon">💬</span>
+                Belum ada pesan masuk.<br>Mulai chat dari halaman Warung!
+            </div>
+        {% endif %}
+
+        {% for item in kontak %}
+        <a href="{{ '/obrolan/room?warung_id=' ~ item.IdWarung if role == 'pembeli' else '/obrolan/room?user_id=' ~ item.IdPengguna }}" class="chat-item">
+            <div class="avatar">
+                {% if item.GambarToko %}
+                    <img src="{{ item.GambarToko }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <div class="chat-info">
+                <div class="chat-name">{{ item.NamaWarung if role == 'pembeli' else item.NamaPengguna }}</div>
+                <div class="chat-preview">{{ item.PesanTerakhir }}</div>
+            </div>
+            <div class="chat-meta">
+                <div class="chat-time">
+                    {{ item.Waktu.strftime('%H:%M') if item.Waktu else '' }}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="footer">
+  <button type="button" onclick="location.href='{{ url_for('pesanan.pesanan_list') }}'"><img src="{{ url_for('static', filename='img/iconhistory.png') }}" alt="history"></button>
+  <button type="button" onclick="location.href='{{ url_for('home.home') }}'"><img src="{{ url_for('static', filename='img/iconhome.png') }}" alt="home"></button>
+  <button type="button" onclick="location.href='{{ url_for('obrolan.obrolan') }}'"><img src="{{ url_for('static', filename='img/iconchat.png') }}" alt="chat"></button>
+</div>
+
+</body>
+</html>
