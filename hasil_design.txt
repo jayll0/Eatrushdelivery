@@ -1,0 +1,72 @@
+************* Module models.Warung
+models/Warung.py:4:0: R0902: Too many instance attributes (13/7) (too-many-instance-attributes)
+models/Warung.py:14:4: R0913: Too many arguments (13/5) (too-many-arguments)
+models/Warung.py:14:4: R0917: Too many positional arguments (13/5) (too-many-positional-arguments)
+models/Warung.py:4:0: R0904: Too many public methods (30/20) (too-many-public-methods)
+************* Module models.Makanan
+models/Makanan.py:7:0: R0914: Too many local variables (17/15) (too-many-locals)
+models/Makanan.py:45:0: R0902: Too many instance attributes (10/7) (too-many-instance-attributes)
+models/Makanan.py:55:4: R0913: Too many arguments (11/5) (too-many-arguments)
+models/Makanan.py:55:4: R0917: Too many positional arguments (11/5) (too-many-positional-arguments)
+models/Makanan.py:326:4: R0913: Too many arguments (7/5) (too-many-arguments)
+models/Makanan.py:326:4: R0917: Too many positional arguments (7/5) (too-many-positional-arguments)
+models/Makanan.py:45:0: R0904: Too many public methods (28/20) (too-many-public-methods)
+************* Module models.AuthModel
+models/AuthModel.py:14:0: R0902: Too many instance attributes (10/7) (too-many-instance-attributes)
+models/AuthModel.py:26:4: R0913: Too many arguments (7/5) (too-many-arguments)
+models/AuthModel.py:26:4: R0917: Too many positional arguments (7/5) (too-many-positional-arguments)
+models/AuthModel.py:55:4: R0911: Too many return statements (10/6) (too-many-return-statements)
+models/AuthModel.py:209:4: R0914: Too many local variables (18/15) (too-many-locals)
+models/AuthModel.py:209:4: R0912: Too many branches (15/12) (too-many-branches)
+models/AuthModel.py:209:4: R0915: Too many statements (55/50) (too-many-statements)
+************* Module models.Obrolan
+models/Obrolan.py:8:0: R0902: Too many instance attributes (9/7) (too-many-instance-attributes)
+************* Module models.Pembayaran
+models/Pembayaran.py:28:0: R0913: Too many arguments (6/5) (too-many-arguments)
+models/Pembayaran.py:28:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+************* Module models.Pengguna
+models/Pengguna.py:3:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
+models/Pengguna.py:4:4: R0913: Too many arguments (9/5) (too-many-arguments)
+models/Pengguna.py:4:4: R0917: Too many positional arguments (9/5) (too-many-positional-arguments)
+************* Module models.Pesanan
+models/Pesanan.py:9:0: R0902: Too many instance attributes (10/7) (too-many-instance-attributes)
+models/Pesanan.py:36:4: R0914: Too many local variables (27/15) (too-many-locals)
+models/Pesanan.py:36:4: R0912: Too many branches (13/12) (too-many-branches)
+models/Pesanan.py:36:4: R0915: Too many statements (66/50) (too-many-statements)
+************* Module models.Keranjang
+models/Keranjang.py:182:0: R0914: Too many local variables (20/15) (too-many-locals)
+models/Keranjang.py:182:0: R0911: Too many return statements (7/6) (too-many-return-statements)
+models/Keranjang.py:182:0: R0912: Too many branches (13/12) (too-many-branches)
+models/Keranjang.py:292:0: R0914: Too many local variables (17/15) (too-many-locals)
+************* Module routes.home_routes
+routes/home_routes.py:9:0: R0914: Too many local variables (24/15) (too-many-locals)
+routes/home_routes.py:9:0: R0912: Too many branches (17/12) (too-many-branches)
+routes/home_routes.py:9:0: R0915: Too many statements (60/50) (too-many-statements)
+************* Module routes.auth_routes
+routes/auth_routes.py:6:0: R0913: Too many arguments (6/5) (too-many-arguments)
+routes/auth_routes.py:6:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+************* Module routes.warung_routes
+routes/warung_routes.py:95:0: R0914: Too many local variables (24/15) (too-many-locals)
+routes/warung_routes.py:95:0: R0912: Too many branches (17/12) (too-many-branches)
+routes/warung_routes.py:95:0: R0915: Too many statements (57/50) (too-many-statements)
+routes/warung_routes.py:372:0: R0912: Too many branches (15/12) (too-many-branches)
+routes/warung_routes.py:372:0: R0915: Too many statements (60/50) (too-many-statements)
+routes/warung_routes.py:470:0: R0914: Too many local variables (16/15) (too-many-locals)
+routes/warung_routes.py:470:0: R0912: Too many branches (19/12) (too-many-branches)
+routes/warung_routes.py:470:0: R0915: Too many statements (61/50) (too-many-statements)
+routes/warung_routes.py:580:0: R0912: Too many branches (14/12) (too-many-branches)
+routes/warung_routes.py:839:0: R0912: Too many branches (13/12) (too-many-branches)
+routes/warung_routes.py:839:0: R0915: Too many statements (57/50) (too-many-statements)
+routes/warung_routes.py:1109:0: R0911: Too many return statements (7/6) (too-many-return-statements)
+************* Module routes.pembayaran_routes
+routes/pembayaran_routes.py:69:0: R0911: Too many return statements (14/6) (too-many-return-statements)
+routes/pembayaran_routes.py:69:0: R0912: Too many branches (16/12) (too-many-branches)
+************* Module routes.keranjang_routes
+routes/keranjang_routes.py:195:0: R0914: Too many local variables (21/15) (too-many-locals)
+routes/keranjang_routes.py:195:0: R0911: Too many return statements (10/6) (too-many-return-statements)
+routes/keranjang_routes.py:195:0: R0912: Too many branches (24/12) (too-many-branches)
+routes/keranjang_routes.py:195:0: R0915: Too many statements (69/50) (too-many-statements)
+
+------------------------------------------------------------------
+Your code has been rated at 9.83/10 (previous run: 7.27/10, +2.56)
+

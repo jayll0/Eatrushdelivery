@@ -1,0 +1,19 @@
+
+Calculating LCOM using LCOM4
++------------------------------+------+
+| Method                       | LCOM |
++------------------------------+------+
+| models.AuthModel.AuthModel   | 2    |
+| models.Keranjang.Keranjang   | 0    |
+| models.Laporan.ItemLaporan   | 0    |
+| models.Laporan.Laporan       | 1    |
+| models.Makanan.Makanan       | 1    |
+| models.OTPManager.OTPManager | 1    |
+| models.Obrolan.Obrolan       | 1    |
+| models.Pembayaran.Pembayaran | 0    |
+| models.Pengguna.Pengguna     | 1    |
+| models.Pesanan.Pesanan       | 1    |
+| models.Warung.Warung         | 2    |
++------------------------------+------+
+| Average                      | 0.91 |
++------------------------------+------+
